@@ -365,8 +365,14 @@
       transition: transform 0.15s ease;
     }
 
-    .iso-node:hover, .iso-node:focus-visible {
-      filter: brightness(1.2);
+    .iso-node:focus-visible, .iso-node:active {
+      filter: brightness(1.25);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .iso-node:hover {
+        filter: brightness(1.2);
+      }
     }
 
     .iso-node-halo {
