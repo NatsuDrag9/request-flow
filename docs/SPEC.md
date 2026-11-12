@@ -14,7 +14,58 @@ The request pipeline consists of 6 sequential stages:
 
 ## 3. Scenarios & Wire Contracts
 
-> **Mandatory Field**: Every scenario definition in `src/core/scenarios.js` must implement a user-facing `description` property (string). This description is displayed in the UI when the scenario is selected to explain its real-world mechanism and learning goal.
+> **Mandatory Field & Presentation**: Every scenario definition in `src/core/scenarios.js` must implement a user-facing `description` property (string). 
+> **Selection & Info UX**: Scenarios are selected using descriptive, semantic behavioral names (e.g. `[ Happy Path ]`, `[ Expired Token ]`, `[ RBAC Restriction ]`, `[ Rate Limit ]`, `[ DB Timeout ]`)—**never raw HTTP status codes**. A dedicated `[ ℹ SCENARIO INFO ]` button in the bottom mechanical control bar opens a separate modal explaining what happens in the active scenario, its distributed system mechanics, expected traversal, and observation hints.
+
+### 3.1 Scenario Selection & Description Modal UX
+
+#### 1. Semantic Scenario Dropdown Selector (No HTTP Status Codes)
+The scenario is selected via a prominent retro-styled tactile dropdown button:
+`[ SCENARIO: Happy Path (Standard Checkout) ▾ ]`.
+Tapping opens a categorized picker sheet listing operational scenarios by domain:
+- **Authentication & AuthZ**: `Happy Path`, `Expired Bearer Token`, `RBAC Role Restriction (Viewer)`.
+- **Perimeter & Gateway**: `Token Bucket Rate Limiting (429)`, `Idempotency Replay (UUID Cache Hit)`.
+- **Database & Persistence**: `DB Connection Pool Timeout (504)`, `Slow Query Latency (Degraded)`, `CAS Optimistic Concurrency Conflict (409)`.
+Selecting any item immediately updates the active scenario and synchronizes the underlying Lab Controls parameters.
+
+#### 2. Dedicated Bottom Action: `[ ℹ SCENARIO INFO ]`
+In the bottom controls grid alongside `[ ▶ PLAY ]`, `[ ⏭ STEP FWD ]`, `[ 🔍 INSPECT WIRE ]`, and `[ ↺ RESET ]`:
+- Button label: `[ ℹ SCENARIO INFO ]` (or `[ ℹ WHAT HAPPENS? ]`).
+- Touch target: $\ge 44\times 44\text{px}$.
+- Tap Action: Opens a dedicated retro-tech modal displaying:
+  - **Scenario Title**: E.g., `RBAC Role Restriction (Checkout Denial)`
+  - **What Happens**: Comprehensive explanation of the distributed system behavior.
+  - **Expected Outcome**: Route traversal, exact halting node (e.g. Node 4 Backend Controller), and response status.
+  - **What to Observe**: Specific telemetry indicators in the pipeline and wire inspector.
+  - **Dismissal**: `[ ✕ CLOSE ]` button and backdrop tap dismiss.
+
+### 3.2 Lab Controls & Interactive Configuration UI
+
+The application provides a slide-up "Lab Controls" drawer/toolbar where users can select pre-built scenario presets or manually toggle individual infrastructure parameters:
+
+```
+┌────────────────────────────────────────────────────────┐
+│  RequestFlow Lab Controls                              │
+├────────────────────────────────────────────────────────┤
+│  Scenario Presets:                                     │
+│  [ Happy Path ] [ Rate Limit ] [ RBAC Role ] [ DB Lag ]│
+│                                                        │
+│  Interactive Toggles:                                  │
+│  • Token Bucket Rate Limiter : [ ON  | off ] (Cap: 5)  │
+│  • User Role                 : [ Viewer | Member | Admin ]
+│  • DB Query Latency          : [ Normal | 1.5s Lag ]   │
+│  • Concurrency Control       : [ Idempotent | CAS ]    │
+└────────────────────────────────────────────────────────┘
+```
+
+#### Control State Specifications:
+- **Preset Selector**: Quick-select buttons for standard test scenarios (`Happy Path`, `Rate Limit 429`, `Auth RBAC 403`, `DB Lag 504`).
+- **Token Bucket Rate Limiter**: Toggle `ON` (capacity: 5 tokens, refill: 1 token/sec) or `OFF` (simulates **Scenario C: 429 Too Many Requests**).
+- **User Role**: Toggle between `Viewer` (read-only), `Member` (standard checkout), and `Admin` (full access) (simulates **Scenario B2: 403 Forbidden**).
+- **DB Query Latency**: Switch between `Normal` (15ms simulated query) and `1.5s Lag` (simulates **Scenario D: Latency & 504 Timeout**).
+- **Concurrency Control**: Toggle between `Idempotent` (deduplication via `Idempotency-Key`, **Scenario E1**) and `CAS` (optimistic lock conflict detection, **Scenario E2**).
+
+---
 
 ### Scenario A: Happy Path (`order_create`)
 - **Description**: *"Standard end-to-end checkout flow. The client sends a valid request with authentication, passes the LB, gateway, and auth middleware, and successfully commits an order transaction to the database."*
