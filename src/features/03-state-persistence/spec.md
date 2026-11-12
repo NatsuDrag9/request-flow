@@ -13,7 +13,7 @@ export interface AppStateV1 {
 
 ### Schema Version 2 (Current Production Target)
 ```typescript
-export interface ScenarioRunCounts {
+export interface ScenarioRunCountsV2 {
   "201-created": number;
   "401-unauthorized": number;
   "504-timeout": number;
@@ -22,23 +22,60 @@ export interface ScenarioRunCounts {
 export interface AppStateV2 {
   version: 2;
   totalRuns: number;
-  scenarioRuns: ScenarioRunCounts;
+  scenarioRuns: ScenarioRunCountsV2;
   lastRunTime: string | null;
   inspectedNodeHistory: number[];
+}
+
+export interface ScenarioRunCountsV3 {
+  "201-created": number;
+  "401-unauthorized": number;
+  "403-forbidden": number;
+  "429-ratelimit": number;
+  "504-timeout": number;
+  "slow-query": number;
+  "idempotency-replay": number;
+  "409-conflict": number;
+  [key: string]: number;
+}
+
+export interface LatencyBenchmarks {
+  avgDnsMs: number;
+  avgTlsMs: number;
+  avgDbMs: number;
+}
+
+export interface ScenarioConfigSnapshot {
+  rateLimiter?: boolean;
+  userRole?: "viewer" | "member" | "admin";
+  latency?: "normal" | "lag";
+  concurrency?: "idempotent" | "cas";
+}
+
+export interface AppStateV3 {
+  version: 3;
+  totalRuns: number;
+  scenarioRuns: ScenarioRunCountsV3;
+  lastRunTime: string | null;
+  inspectedNodeHistory: number[];
+  themePreference: "CRT_DARK" | "PAPER_LIGHT";
+  latencyStats: LatencyBenchmarks;
+  savedScenarioConfigs: Record<string, ScenarioConfigSnapshot>;
 }
 ```
 
 ---
 
-## 2. Migration Functions (Pure & Deterministic)
+## 2. Migration Functions (Pure, Sequential & Linear)
 
 ```typescript
 export function migrateV1ToV2(oldState: AppStateV1): AppStateV2 {
+  const pings = typeof oldState.pings === "number" ? oldState.pings : 0;
   return {
     version: 2,
-    totalRuns: typeof oldState.pings === "number" ? oldState.pings : 0,
+    totalRuns: pings,
     scenarioRuns: {
-      "201-created": typeof oldState.pings === "number" ? oldState.pings : 0,
+      "201-created": pings,
       "401-unauthorized": 0,
       "504-timeout": 0,
     },
@@ -47,42 +84,50 @@ export function migrateV1ToV2(oldState: AppStateV1): AppStateV2 {
   };
 }
 
-export function migrateState(raw: unknown): AppStateV2 {
-  // If null, undefined, or not an object, return pristine v2 default state
+export function migrateV2ToV3(v2State: AppStateV2): AppStateV3 {
+  const totalRuns = typeof v2State.totalRuns === "number" ? v2State.totalRuns : 0;
+  return {
+    version: 3,
+    totalRuns,
+    scenarioRuns: {
+      "201-created": Number(v2State.scenarioRuns?.["201-created"] ?? totalRuns),
+      "401-unauthorized": Number(v2State.scenarioRuns?.["401-unauthorized"] ?? 0),
+      "403-forbidden": 0,
+      "429-ratelimit": 0,
+      "504-timeout": Number(v2State.scenarioRuns?.["504-timeout"] ?? 0),
+      "slow-query": 0,
+      "idempotency-replay": 0,
+      "409-conflict": 0,
+    },
+    lastRunTime: typeof v2State.lastRunTime === "string" ? v2State.lastRunTime : null,
+    inspectedNodeHistory: Array.isArray(v2State.inspectedNodeHistory)
+      ? v2State.inspectedNodeHistory.filter((n) => typeof n === "number")
+      : [],
+    themePreference: "CRT_DARK",
+    latencyStats: { avgDnsMs: 4, avgTlsMs: 38, avgDbMs: 8 },
+    savedScenarioConfigs: {},
+  };
+}
+
+export const MIGRATION_PIPELINE: Record<number, (state: any) => any> = {
+  1: (s) => migrateV1ToV2(s),
+  2: (s) => migrateV2ToV3(s),
+};
+
+export function migrateState(raw: unknown): AppStateV3 {
   if (!raw || typeof raw !== "object") {
-    return createDefaultStateV2();
+    return createDefaultStateV3();
   }
-
-  const candidate = raw as Record<string, unknown>;
-
-  // Detect unversioned legacy or v1
-  if (!candidate.version || candidate.version === 1) {
-    const v1State: AppStateV1 = {
-      version: 1,
-      pings: typeof candidate.pings === "number" ? candidate.pings : 0,
-      lastPingTime: typeof candidate.lastPingTime === "string" ? candidate.lastPingTime : null,
-    };
-    return migrateV1ToV2(v1State);
+  let current: any = { ...raw };
+  let version = typeof current.version === "number" ? current.version : 1;
+  while (version < 3) {
+    const handler = MIGRATION_PIPELINE[version];
+    if (!handler) break;
+    current = handler(current);
+    version = current.version ?? version + 1;
   }
-
-  // Already v2
-  if (candidate.version === 2) {
-    return {
-      version: 2,
-      totalRuns: typeof candidate.totalRuns === "number" ? candidate.totalRuns : 0,
-      scenarioRuns: {
-        "201-created": Number(candidate.scenarioRuns?.["201-created"] ?? 0),
-        "401-unauthorized": Number(candidate.scenarioRuns?.["401-unauthorized"] ?? 0),
-        "504-timeout": Number(candidate.scenarioRuns?.["504-timeout"] ?? 0),
-      },
-      lastRunTime: typeof candidate.lastRunTime === "string" ? candidate.lastRunTime : null,
-      inspectedNodeHistory: Array.isArray(candidate.inspectedNodeHistory)
-        ? candidate.inspectedNodeHistory.filter((n) => typeof n === "number")
-        : [],
-    };
-  }
-
-  // Fallback for future unsupported versions
+  return current;
+}
   return createDefaultStateV2();
 }
 ```

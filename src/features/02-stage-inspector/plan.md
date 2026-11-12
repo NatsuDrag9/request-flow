@@ -3,32 +3,27 @@
 ## 1. Implementation Steps & TDD Sequencing
 
 ### Step 1: Headless Formatter & Inspector Model (`src/features/02-stage-inspector/inspector.ts`)
-- Implement `formatWireProtocol(wire: StageWireData): string`
-  - Formats HTTP request/response headers and body.
-  - Formats TLS 1.3 handshake parameters (cipher suite, RTT, DNS latency).
-  - Formats Reverse Proxy headers and rate-limit counters.
-  - Formats Backend middleware execution traces.
-  - Formats PostgreSQL transactions (`BEGIN`, `QUERY`, `COMMIT`).
+- Implement `formatWireProtocol(nodeIndex, stage, direction): string`
+  - Formats HTTP request/response headers, parameters, and payloads.
+  - Formats TLS 1.3 cryptographic handshake parameters (ciphers, SNI, session resumption).
+  - Formats API Gateway routing, token bucket rate limiting (429), and idempotency cache lookups (200 Replay).
+  - Formats Backend middleware traces, JWT verification (401), and RBAC permission checks (403).
+  - Formats PostgreSQL ACID transactions, lock deadlocks (504), query duration alerts (Slow Query), and optimistic concurrency CAS version mismatches (409).
 - Implement `buildInspectorDetails(scenario, nodeIndex, direction): InspectorStageDetails`.
 
 ### Step 2: Automated Unit Testing (`tests/unit/inspector.test.ts`)
-- Test wire protocol formatting for HTTP request (Node 01).
-- Test wire protocol formatting for TLS transport (Node 02).
-- Test wire protocol formatting for API Gateway (Node 03).
-- Test wire protocol formatting for Backend App & Auth failure (Node 04).
-- Test wire protocol formatting for Database ACID transaction (Node 05).
-- Test unreached stage formatting (for `401` and `504` scenarios).
+- Test wire protocol formatting across all 6 nodes (Client, DNS & TLS, Load Balancer, API Gateway, Backend App, Database).
+- Test unreached stage formatting for halted error flows (`401`, `403`, `429`, `504`, `409`).
+- Test RBAC payload formatting with required vs granted roles.
+- Test idempotency replay wire header generation (`X-Idempotency-Status: REPLAY`).
+- Test optimistic lock failure wire representation (`0 rows affected`, `409 Conflict`).
 
-### Step 3: Bundle Integration (`scripts/bundle.js`)
-- Update `scripts/bundle.js` to bundle `src/features/02-stage-inspector/inspector.ts` along with `engine.ts` into `RequestFlowEngine`.
-- Verify bundle size remains $<50\text{ KB}$ and zero forbidden identifiers (`open`).
-
-### Step 4: UI & Mobile Bottom Sheet Integration (`src/index.html`)
-- Add tactile bottom sheet container markup (`#inspectorDrawer`, drag handle, tabs, `#inspectorContent`).
-- Add CSS styling for the retro bottom sheet, transitions, and monospace wire terminal box.
-- Wire tap listeners on subway track nodes so tapping any node opens its inspector.
-- Add `[ 🔍 INSPECT WIRE ]` button on the main chassis for quick access.
-- Wire close button `[ ✕ CLOSE ]` and backdrop dismissal.
+### Step 3: UI & Mobile Bottom Sheet Integration (`src/index.html`)
+- Integrate tactile bottom sheet container markup (`#sheetDrawer`, drag handle, tabs, `#wirePane`, `#overviewPane`).
+- Embed borderless, square-free copy icon inside the black telemetry code box (`top: 3px; right: 3px;`) with layered files icon (front layer top-right).
+- Wire tap listeners on both Subway Track node rows and Isometric Network SVG nodes so tapping any node inspects it.
+- Add `[ 🔍 INSPECT WIRE ]` button on the main chassis for quick access to currently active node.
+- Wire close button `[ ✕ ]` and backdrop dismissal.
 
 ### Step 5: Verification
 - Run `npm run validate` (`tsc --noEmit && vitest run && bundle`).

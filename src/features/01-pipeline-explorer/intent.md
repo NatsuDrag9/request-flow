@@ -25,19 +25,32 @@ Developers frequently interact with high-level client libraries (`fetch`, `axios
 ## 3. Scope & Key Capabilities
 
 ### In Scope
-- **5-Node Vertical Subway Pipeline**:
-  1. **Client Node**: Request initiation, headers generation (`User-Agent`, `Authorization`, `Content-Type`), payload construction.
-  2. **Network & TLS Node**: DNS lookup simulation, TCP 3-way handshake, TLS 1.3 cryptographic negotiation, latency jitter.
-  3. **API Gateway Node (Reverse Proxy / Nginx)**: SSL termination, CORS preflight validation, rate-limiting checks, path routing (`/api/v1/orders`).
-  4. **Backend Application Node (Express/Spring Simulator)**: Auth token parsing, request validation, business logic execution, SQL statement preparation.
-  5. **Database Node (PostgreSQL ACID Engine)**: Connection pooling, `BEGIN` transaction, `INSERT / SELECT` row locking, commit/rollback.
+- **6-Node Pipeline Model (Subway Sequence & Isometric Network)**:
+  1. **Node 0 (Client)**: Request dispatch, headers generation (`User-Agent`, `Authorization`, `Content-Type`), payload construction.
+  2. **Node 1 (DNS & TLS 1.3)**: Domain resolution, TCP 3-way handshake, TLS 1.3 cryptographic session setup.
+  3. **Node 2 (Load Balancer)**: L4/L7 traffic distribution, target instance health checks, reverse proxy ingress.
+  4. **Node 3 (API Gateway)**: Perimeter security, Token Bucket rate-limiting (429), Idempotency key lookup cache, path routing.
+  5. **Node 4 (Backend / Auth Controller)**: Bearer token parsing (401), RBAC role validation (403), business logic execution.
+  6. **Node 5 (Database / Persistence)**: PostgreSQL ACID engine, transaction locking, connection pooling (504 timeout), CAS optimistic locks (409).
 - **Deterministic State Machine (FSM)**:
   - Step-by-step playback: `Play`, `Pause`, `Step Forward`, `Step Backward`, `Reset`.
   - Dual-direction packet simulation (Downstream Request $\to$ Upstream Response).
-- **3 Realistic Scenario Presets**:
-  - **Scenario A (`201 Created`)**: Full round-trip happy path for an order creation.
-  - **Scenario B (`401 Unauthorized`)**: Gateway/Auth rejection halting the flow at the middleware layer before touching the database.
-  - **Scenario C (`504 Gateway Timeout`)**: Database lock timeout causing the gateway to terminate the downstream connection.
+- **Comprehensive Scenario Catalog with Guidance**:
+  - **Scenario A (`201 Created`)**: Full round-trip happy path for order placement across all 6 nodes.
+  - **Scenario B1 (`401 Unauthorized`)**: Missing or expired JWT token caught at Backend/Auth before touching the database.
+  - **Scenario B2 (`403 Forbidden`)**: RBAC permission check rejecting a `Viewer` attempting a mutating `POST /checkout` (requires `Member` or `Admin`).
+  - **Scenario C (`429 Too Many Requests`)**: Token Bucket depletion at API Gateway with `Retry-After: 1`.
+  - **Scenario D1 (`504 Gateway Timeout`)**: Connection pool exhaustion where PostgreSQL hangs on row locks exceeding the 5000ms SLA.
+  - **Scenario D2 (Slow Query Latency)**: Degraded database query ($1200\text{ms}$ vs $15\text{ms}$) with status `200 OK` and `X-Query-Time: 1200ms` alert.
+  - **Scenario E1 (Idempotency Replay `200 OK`)**: Client-side UUID idempotency key lookup at API Gateway returning cached response without re-executing backend or DB.
+  - **Scenario E2 (Optimistic Lock `409 Conflict`)**: Compare-And-Swap (CAS) version conflict on concurrent item stock checkout failing at the database commit stage.
+- **Scenario Guidance & Dedicated Info Modal**:
+  - Scenarios are selected using clear operational titles (e.g. `[ HAPPY PATH ]`, `[ EXPIRED TOKEN ]`, `[ RBAC RESTRICTION ]`, `[ RATE LIMIT ]`, `[ DB TIMEOUT ]`) rather than raw HTTP status codes.
+  - A dedicated `[ ℹ SCENARIO INFO ]` button in the bottom controls grid opens an interactive modal explaining the active scenario's distributed system mechanics, expected traversal path, halting point, and key wire telemetry observations.
+- **Interactive Lab Controls & Configuration State Persistence**:
+  - Interactive parameters: Token Bucket Rate Limiting (`ON` vs `OFF`), User Roles (`Viewer`, `Member`, `Admin`), DB Query Latency (`Normal` vs `1.5s Lag`), Concurrency Control (`Idempotent` vs `CAS`).
+  - `[ 💾 SAVE CONFIG ]` button enables users to save their customized parameter tweaks per scenario, persisting across app reloads and satisfying the assignment's data alteration requirement.
+  - `[ ↺ RESET TO DEFAULT ]` button reverts the current scenario to baseline presets.
 - **Retro-Tech Workstation Styling**:
   - Full adherence to `CRT_DARK` and `PAPER_LIGHT` design tokens.
   - Tactile mechanical buttons with hard 2px offset drop shadows.

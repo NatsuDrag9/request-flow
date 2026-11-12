@@ -27,7 +27,7 @@ flowchart TD
   - `tests/unit/scenarios.test.ts`
   - `tests/unit/engine.test.ts`
 - **Test Cases**:
-  - Verify all 3 scenario presets (`201`, `401`, `504`) have valid node contracts, status codes, and non-empty stage payloads.
+  - Verify all 8 scenario presets (`201-created`, `401-unauthorized`, `403-forbidden`, `429-ratelimit`, `504-timeout`, `slow-query`, `idempotency-replay`, `409-conflict`) have valid node contracts, status codes, non-empty stage payloads, and educational guidance descriptions.
   - Test FSM transitions: `READY` $\to$ `IN_FLIGHT` $\to$ `STEPPING` $\to$ `HALTED_SUCCESS` / `HALTED_ERROR`.
   - Test single-stepping forward (`stepForward()`) and boundary conditions (cannot step past final hop).
   - Test stepping backward (`stepBackward()`) reversing from upstream to downstream.
@@ -37,13 +37,16 @@ flowchart TD
 ### Task 2: Headless Scenarios Model
 - **File**: `src/features/01-pipeline-explorer/scenarios.ts`
 - **Deliverables**:
-  - Export strongly-typed `SCENARIOS` dictionary and helper `getScenario(id)`.
-  - Realistically populate wire payloads:
-    - Client headers (`Host`, `User-Agent`, `Authorization: Bearer cc_tok_...`).
-    - TLS 1.3 handshake parameters (`Cipher: TLS_AES_256_GCM_SHA384`, `SNI: api.cloudcrane.ai`).
-    - API Gateway tags (`X-Forwarded-For`, `X-Request-Id`, upstream path routing).
-    - Express auth middleware parsing (`req.user = { id: 42 }`).
-    - PostgreSQL query (`INSERT INTO orders (item, qty) VALUES ('vintage_crt', 1);`).
+  - Export strongly-typed `SCENARIOS` dictionary and helper `getScenario(id)` supporting all 8 presets.
+  - Realistically populate wire payloads and educational guidance:
+    - 201 Created: Client POST, TLS handshake, Nginx routing, Express auth, PostgreSQL insert.
+    - 401 Unauthorized: Malformed/expired JWT token caught at Express auth.
+    - 403 Forbidden: Valid JWT token but `Viewer` role rejected by RBAC guard for mutating endpoint (`POST /checkout`).
+    - 429 Too Many Requests: Depleted token bucket at API Gateway returning `Retry-After: 1`.
+    - 504 Gateway Timeout: DB connection lock exceeding 5000ms proxy SLA.
+    - Slow Query: Degraded database execution ($1200\text{ms}$ vs $15\text{ms}$) with `X-Query-Time` header.
+    - Idempotency Replay: Duplicate `Idempotency-Key` returning cached `200 OK` from Gateway.
+    - 409 Conflict: CAS optimistic concurrency lock collision during stock decrement.
 
 ### Task 3: Headless FSM State Machine Engine
 - **File**: `src/features/01-pipeline-explorer/engine.ts`
@@ -55,17 +58,21 @@ flowchart TD
 ### Task 4: Unit Test & Typecheck Verification
 - Run `npm run typecheck && npm test` $\to$ Assert **0 type errors** and **100% test pass rate** across all unit tests before proceeding to UI integration.
 
-### Task 5: Presentation Component (Subway Rail & Controls)
-- **File**: `src/features/01-pipeline-explorer/pipeline-view.ts`
+### Task 5: Presentation Component (Subway Rail, Isometric Map & Controls)
+- **File**: `src/features/01-pipeline-explorer/node-component.ts`
 - **Deliverables**:
-  - Vertical subway rail connecting the 5 nodes with mechanical styling.
-  - Node cards with index pills (`[01] CLIENT`, `[02] NETWORK`, etc.) and status badges (`IDLE`, `ACTIVE`, `PASSED`, `HALTED`).
-  - Animated packet bead with directional arrow ($\downarrow$ request, $\uparrow$ response).
+  - Vertical subway rail and 2.5D Isometric Network Map connecting the 6 nodes ([01] CLIENT, [02] DNS & TLS, [03] LOAD BALANCER, [04] API GATEWAY, [05] BACKEND APP, [06] DATABASE) with mechanical styling.
+  - Node cards and isometric tech icons with index badges, IP labels, and status badges (`IDLE`, `ACTIVE`, `PASSED`, `ERROR`).
+  - Animated packet bead and glowing transit wires with directional propagation.
   - Floating mechanical action bar with tactile drop shadows:
     - `[ ▶ PLAY ]` / `[ ⏸ PAUSE ]`
-    - `[ ⏭ STEP ]`
-    - `[ ↺ RESET ]`
-  - Scenario toggle pills at top: `[ 201 CREATED ]`, `[ 401 UNAUTH ]`, `[ 504 TIMEOUT ]`.
+    - `[ ⏭ STEP FWD ]` / `[ ⏮ STEP BACK ]`
+    - `[ 🔍 INSPECT WIRE ]`
+    - `[ ℹ SCENARIO INFO ]` (opens dedicated educational guidance modal)
+    - `[ ↺ RESET TO CLIENT ]`
+  - Tactile dropdown button for scenario selection: `[ SCENARIO: Happy Path (Standard Checkout) ▾ ]`.
+  - Lab Controls drawer with interactive toggles, `[ 💾 SAVE CONFIG ]`, and `[ ↺ RESET TO DEFAULT ]`.
+  - Dual view toggle buttons: `[ ❖ NETWORK ]` and `[ ☰ SEQUENCE ]`.
   - Theme compatibility across both `CRT_DARK` and `PAPER_LIGHT`.
 
 ### Task 6: Local Compilation & Built-in Browser Review
