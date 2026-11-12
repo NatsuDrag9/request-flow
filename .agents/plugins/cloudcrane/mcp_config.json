@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "cloudcrane": {
+      "url": "https://cloudcrane.ai/api/apps/mcp"
+    }
+  }
+}
