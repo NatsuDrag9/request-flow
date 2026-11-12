@@ -15,7 +15,7 @@
 ## How It Works
 When a user opens RequestFlow on their phone, the app presents an interactive, vertical pipeline that models modern backend infrastructure:
 
-1. **Triggering Requests**: The user selects a scenario (e.g., *201 Created Order*, *401 Unauthorized*, or *504 DB Timeout*) and taps **Send Request** or **Step ➔** in the thumb-accessible bottom dock.
+1. **Triggering Requests & Scenario Guidance**: The user selects a scenario from the selector (e.g., *201 Created Order*, *401 Unauthorized*, *403 Forbidden*, *429 Rate Limit*, or *504 DB Timeout*). Each scenario features a concise description explaining what real-world backend behavior it models, the expected system response, and what the user should observe. The user then taps **Send Request** or **Step ➔** in the thumb-accessible bottom dock.
 2. **Visual Packet Traversal**: An animated packet travels node-by-node along a glowing track through five architecture stages:
    - **Client / Browser**: Initiates the request with headers and auth tokens.
    - **DNS & TLS 1.3**: Demonstrates domain resolution and secure handshakes.
