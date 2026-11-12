@@ -18,8 +18,9 @@ if (!fs.existsSync(srcHtmlPath)) {
   process.exit(1);
 }
 
-// Compile TypeScript engine module into self-contained IIFE
-const enginePath = path.join(srcDir, "features/01-pipeline-explorer/engine.ts");
+// Compile TypeScript core module into self-contained IIFE
+const corePath = path.join(srcDir, "core/index.ts");
+const enginePath = fs.existsSync(corePath) ? corePath : path.join(srcDir, "features/01-pipeline-explorer/engine.ts");
 let engineJs = "";
 if (fs.existsSync(enginePath)) {
   const engineBuild = esbuild.buildSync({

@@ -118,9 +118,6 @@
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
-      .btn-retro:active {
-        transform: none !important;
-      }
     }
 
     * {
@@ -128,36 +125,33 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     body {
+      font-family: var(--font-mono);
       background-color: var(--bg-canvas);
       color: var(--text-primary);
-      font-family: var(--font-mono);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding-top: max(var(--safe-top), 10px);
-      padding-bottom: max(var(--safe-bottom), 10px);
-      padding-left: 12px;
-      padding-right: 12px;
-      user-select: none;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      padding: max(12px, var(--safe-top)) 12px max(12px, var(--safe-bottom)) 12px;
+      line-height: 1.4;
+      overflow-x: hidden;
     }
 
-    /* Top Hardware Header */
+    /* Tactile Header Bar */
     header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 8px 12px;
       background: var(--bg-surface);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow-retro);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      min-height: 50px;
+      margin-bottom: 12px;
     }
 
     .brand {
@@ -167,19 +161,19 @@
     }
 
     .brand-tag {
-      font-size: 11px;
-      font-weight: 800;
-      background: var(--border-active);
-      color: var(--accent-primary-text);
-      padding: 3px 6px;
-      border-radius: 2px;
-      letter-spacing: 0.5px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-inset);
+      color: var(--text-tertiary);
     }
 
     h1 {
       font-size: 14px;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
       text-transform: uppercase;
     }
 
@@ -193,79 +187,57 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 700;
+      padding: 6px 10px;
+      min-height: 44px;
+      min-width: 44px;
       background: var(--bg-card);
       color: var(--text-primary);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      min-height: 44px;
-      min-width: 110px;
-      padding: 6px 10px;
+      box-shadow: var(--shadow-retro);
       cursor: pointer;
-      box-shadow: 2px 2px 0px var(--border-strong);
       touch-action: manipulation;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      letter-spacing: 0.5px;
     }
 
     .theme-toggle-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: none;
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
     }
 
     .sys-badge {
       font-size: 11px;
-      font-family: var(--font-mono);
-      color: var(--accent-success);
-      background: var(--bg-inset);
-      border: 1px solid var(--border-strong);
-      padding: 4px 8px;
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      gap: 5px;
       font-weight: 700;
+      padding: 4px 8px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-inset);
+      color: var(--border-active);
     }
 
-    .sys-badge::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      background: var(--accent-success);
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    /* Main Console Chassis */
+    /* Main Chassis */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 10px 0;
-      gap: 10px;
+      gap: 12px;
     }
 
     .workstation-chassis {
       background: var(--bg-surface);
       border: 2px solid var(--border-strong);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
       box-shadow: var(--shadow-retro-lg);
-      padding: 14px 14px;
-      width: 100%;
-      max-width: 420px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     /* Scenario Selector Pills */
     .scenario-nav {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      -webkit-overflow-scrolling: touch;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
 
     .scenario-pill {
@@ -273,87 +245,91 @@
       font-size: 11px;
       font-weight: 700;
       min-height: 44px;
-      padding: 6px 10px;
-      background: var(--bg-card);
-      color: var(--text-secondary);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      box-shadow: 2px 2px 0px var(--border-strong);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-retro);
       cursor: pointer;
-      white-space: nowrap;
-      touch-action: manipulation;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      touch-action: manipulation;
+      transition: all 0.1s ease;
     }
 
     .scenario-pill:active {
-      transform: translate(2px, 2px);
-      box-shadow: none;
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
     }
 
     .scenario-pill.active {
-      background: var(--border-active);
-      color: var(--accent-primary-text);
-      border-color: var(--border-strong);
+      border-color: var(--border-active);
+      color: var(--border-active);
+      background: var(--bg-inset);
+      box-shadow: inset 1px 1px 0px #000000;
     }
 
-    /* 5-Node Vertical Subway Track */
+    /* Subway Track Visualizer */
     .pipeline-track {
+      position: relative;
       display: flex;
       flex-direction: column;
-      position: relative;
-      margin: 8px 0 14px;
-      padding-left: 10px;
+      gap: 6px;
+      padding: 4px 0;
     }
 
     .track-rail {
       position: absolute;
-      left: 28px;
-      top: 14px;
-      bottom: 14px;
+      top: 18px;
+      bottom: 18px;
+      left: 17px;
       width: 4px;
       background: var(--border-subtle);
       z-index: 1;
     }
 
     .node-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
       position: relative;
       z-index: 2;
-      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      touch-action: manipulation;
     }
 
     .node-station-dot {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
+      border: 2px solid var(--border-strong);
       background: var(--bg-surface);
-      border: 3px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      box-shadow: var(--shadow-retro);
       transition: all 0.15s ease;
       flex-shrink: 0;
     }
 
     .node-card {
       flex: 1;
-      min-height: 44px;
+      min-height: 46px;
       background: var(--bg-card);
       border: 2px solid var(--border-subtle);
       border-radius: var(--radius-sm);
       padding: 6px 10px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      box-shadow: 1px 1px 0px var(--border-strong);
-      transition: all 0.15s ease;
+      justify-content: space-between;
+      box-shadow: var(--shadow-retro);
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
 
     .node-info-col {
@@ -364,9 +340,8 @@
 
     .node-name {
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: 0.5px;
-      color: var(--text-primary);
     }
 
     .node-role {
@@ -378,94 +353,92 @@
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
-      border-radius: 2px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border-subtle);
       background: var(--bg-inset);
       color: var(--text-secondary);
+      flex-shrink: 0;
     }
 
-    /* Active Station Glow */
+    /* Active Node State */
     .node-row.active .node-station-dot {
       border-color: var(--border-active);
       background: var(--border-active);
       color: var(--accent-primary-text);
-      transform: scale(1.08);
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 10px var(--border-active);
     }
 
     .node-row.active .node-card {
       border-color: var(--border-active);
-      box-shadow: 2px 2px 0px var(--border-strong);
+      background: var(--bg-surface);
     }
 
     .node-row.active .node-badge {
-      background: var(--border-active);
-      color: var(--accent-primary-text);
-      border-color: var(--border-strong);
+      border-color: var(--border-active);
+      color: var(--border-active);
     }
 
-    /* Passed State */
+    /* Passed Node State */
     .node-row.passed .node-station-dot {
       border-color: var(--accent-success);
       color: var(--accent-success);
     }
 
-    /* Inset CRT Phosphor Telemetry Well */
+    .node-row.passed .node-card {
+      opacity: 0.85;
+    }
+
+    /* Telemetry Well */
     .telemetry-well {
       background: var(--bg-inset);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      padding: 12px 12px;
-      margin-bottom: 14px;
-      box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.25);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: inset 2px 2px 0px #000000;
     }
 
     .telemetry-row {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 6px;
+      align-items: center;
+      font-size: 11px;
     }
 
     .telemetry-title {
-      font-size: 11px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
       font-weight: 700;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
     }
 
     .telemetry-status-pill {
-      font-size: 11px;
-      font-weight: 800;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
       color: var(--border-active);
-      letter-spacing: 0.5px;
     }
 
     .telemetry-main-readout {
-      font-size: 16px;
-      font-weight: 800;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--border-active);
-      line-height: 1.3;
       letter-spacing: 0.5px;
-      margin: 4px 0 8px;
     }
 
     .telemetry-log {
       font-size: 11px;
-      color: var(--text-tertiary);
-      border-top: 2px dotted var(--border-subtle);
-      padding-top: 8px;
-      line-height: 1.5;
-      font-weight: 600;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      border-top: 1px dashed var(--border-subtle);
+      padding-top: 6px;
     }
 
-    .telemetry-log span {
-      color: var(--text-primary);
-      font-weight: 700;
-    }
-
-    /* Tactile Mechanical Controls */
+    /* Mechanical Controls Grid */
     .controls-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -474,7 +447,7 @@
 
     .btn-retro {
       font-family: var(--font-mono);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -511,6 +484,161 @@
       border-color: var(--border-strong);
     }
 
+    /* Stage Wire Inspector Bottom Sheet */
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .sheet-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet-drawer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-card);
+      border-top: 2px solid var(--border-strong);
+      border-left: 2px solid var(--border-strong);
+      border-right: 2px solid var(--border-strong);
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.7);
+      z-index: 101;
+      max-height: 80dvh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 0 12px max(16px, var(--safe-bottom)) 12px;
+    }
+
+    .sheet-drawer.sheet-active {
+      transform: translateY(0);
+    }
+
+    .sheet-grab-bar {
+      width: 44px;
+      height: 5px;
+      background: var(--border-strong);
+      border-radius: 3px;
+      margin: 8px auto 6px auto;
+      cursor: pointer;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0 10px 0;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+
+    .sheet-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--border-active);
+    }
+
+    .sheet-close-btn {
+      min-height: 44px;
+      min-width: 44px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-retro);
+      touch-action: manipulation;
+    }
+
+    .sheet-close-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    /* Segmented Tab Bar */
+    .sheet-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .sheet-tab-btn {
+      min-height: 44px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: all 0.1s ease;
+    }
+
+    .sheet-tab-btn.active {
+      border-color: var(--border-active);
+      color: var(--border-active);
+      background: var(--bg-inset);
+    }
+
+    .sheet-content {
+      overflow-y: auto;
+      flex: 1;
+      padding-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .wire-code-box {
+      background: var(--bg-inset);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      word-break: break-all;
+      box-shadow: inset 1px 1px 0 #000000;
+      max-height: 45dvh;
+      overflow-y: auto;
+    }
+
+    .overview-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+    }
+
     /* Industrial Status Footer */
     footer {
       padding: 8px 12px;
@@ -520,9 +648,23 @@
       box-shadow: var(--shadow-retro);
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 11px;
       font-weight: 600;
       color: var(--text-secondary);
+      margin-top: 10px;
+    }
+
+    .btn-reset-storage {
+      background: transparent;
+      border: none;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 4px;
+      touch-action: manipulation;
     }
   </style>
 </head>
@@ -561,7 +703,7 @@
       <div class="pipeline-track">
         <div class="track-rail"></div>
 
-        <div class="node-row active" id="node-row-0">
+        <div class="node-row active" id="node-row-0" onclick="inspectNode(0)">
           <div class="node-station-dot">01</div>
           <div class="node-card">
             <div class="node-info-col">
@@ -572,7 +714,7 @@
           </div>
         </div>
 
-        <div class="node-row" id="node-row-1">
+        <div class="node-row" id="node-row-1" onclick="inspectNode(1)">
           <div class="node-station-dot">02</div>
           <div class="node-card">
             <div class="node-info-col">
@@ -583,7 +725,7 @@
           </div>
         </div>
 
-        <div class="node-row" id="node-row-2">
+        <div class="node-row" id="node-row-2" onclick="inspectNode(2)">
           <div class="node-station-dot">03</div>
           <div class="node-card">
             <div class="node-info-col">
@@ -594,7 +736,7 @@
           </div>
         </div>
 
-        <div class="node-row" id="node-row-3">
+        <div class="node-row" id="node-row-3" onclick="inspectNode(3)">
           <div class="node-station-dot">04</div>
           <div class="node-card">
             <div class="node-info-col">
@@ -605,7 +747,7 @@
           </div>
         </div>
 
-        <div class="node-row" id="node-row-4">
+        <div class="node-row" id="node-row-4" onclick="inspectNode(4)">
           <div class="node-station-dot">05</div>
           <div class="node-card">
             <div class="node-info-col">
@@ -641,7 +783,10 @@
         <button class="btn-retro btn-retro-secondary" id="btnStepForward" onclick="handleStepForward()">
           [ ⏭ STEP FWD ]
         </button>
-        <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()" style="grid-column: span 2;">
+        <button class="btn-retro btn-retro-secondary" id="btnInspectActive" onclick="inspectCurrentNode()">
+          [ 🔍 INSPECT WIRE ]
+        </button>
+        <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()">
           [ ↺ RESET TO CLIENT ]
         </button>
       </div>
@@ -649,9 +794,50 @@
     </div>
   </main>
 
+  <!-- Stage Wire Inspector Slide-Up Bottom Sheet -->
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="hideInspector()"></div>
+  <div class="sheet-drawer" id="sheetDrawer" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-grab-bar" onclick="hideInspector()"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheetTitle">[NODE 01: CLIENT]</div>
+      <button class="sheet-close-btn" onclick="hideInspector()" aria-label="Close Inspector">
+        [ ✕ ]
+      </button>
+    </div>
+
+    <!-- Segmented Tab Navigation -->
+    <div class="sheet-tabs">
+      <button class="sheet-tab-btn active" id="tabBtnOverview" onclick="switchInspectorTab('OVERVIEW')">
+        📖 OVERVIEW
+      </button>
+      <button class="sheet-tab-btn" id="tabBtnWire" onclick="switchInspectorTab('WIRE')">
+        ⚡ WIRE TELEMETRY
+      </button>
+    </div>
+
+    <!-- Sheet Content Pane -->
+    <div class="sheet-content">
+      <div id="overviewPane" class="overview-card">
+        <div><strong>ROLE:</strong> <span id="inspectorRole">Client Application</span></div>
+        <div><strong>DESCRIPTION:</strong> <span id="inspectorDesc">Initiates HTTP POST request.</span></div>
+        <div style="border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
+          <strong>DIRECTION:</strong> <span id="inspectorDirection">DOWNSTREAM</span> &bull; 
+          <strong>SCENARIO:</strong> <span id="inspectorScenario">201 Created</span>
+        </div>
+      </div>
+
+      <div id="wirePane" style="display: none; flex-direction: column; gap: 8px;">
+        <pre class="wire-code-box" id="inspectorWireText"></pre>
+        <button class="btn-retro btn-retro-secondary" onclick="copyWireData()" style="min-height: 44px;">
+          [ 📋 COPY TELEMETRY ]
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer>
-    <span>CAL: TOUCH_48PX</span>
-    <span>THEMES: CRT_DARK / PAPER_LIGHT</span>
+    <span id="footerStats">RUNS: 0 &bull; v2 PERSISTED</span>
+    <button class="btn-reset-storage" onclick="handleResetStorage()">[ ↺ RESET STATS ]</button>
   </footer>
 
   <script>
@@ -685,10 +871,20 @@
       if (btn) btn.innerText = "THEME: " + currentTheme;
     }
 
-    /* Engine Integration */
+    /* Core Engine & Storage Instances */
     let engine = null;
+    let storageEngine = null;
+    let inspectedNodeIndex = 0;
+    let activeInspectorTab = "OVERVIEW";
 
-    function initEngine() {
+    function initLab() {
+      // 1. Initialize State Persistence Engine
+      if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.StorageEngine) {
+        storageEngine = new RequestFlowEngine.StorageEngine(window.localStorage);
+        updateStorageFooter();
+      }
+
+      // 2. Initialize Headless FSM Engine
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PipelineEngine) {
         engine = new RequestFlowEngine.PipelineEngine({ scenarioId: "201-created", hopDelayMs: 650 });
         engine.on("stateChange", updateView);
@@ -812,12 +1008,123 @@
     }
 
     function onPipelineComplete(state) {
-      console.log("Pipeline lifecycle complete:", state);
+      if (storageEngine && engine) {
+        storageEngine.recordRun(engine.getScenario().id);
+        updateStorageFooter();
+      }
+    }
+
+    /* Stage Wire Inspector Actions */
+    function inspectCurrentNode() {
+      if (!engine) return;
+      inspectNode(engine.getState().currentNode);
+    }
+
+    function inspectNode(nodeIndex) {
+      if (!engine || typeof RequestFlowEngine === "undefined" || !RequestFlowEngine.buildInspectorDetails) return;
+      inspectedNodeIndex = nodeIndex;
+
+      const state = engine.getState();
+      const scenario = engine.getScenario();
+      const details = RequestFlowEngine.buildInspectorDetails(scenario, nodeIndex, state.direction);
+
+      // Record node inspection in storage
+      if (storageEngine) {
+        storageEngine.recordInspection(nodeIndex);
+        updateStorageFooter();
+      }
+
+      // Populate sheet fields
+      const sheetTitle = document.getElementById("sheetTitle");
+      const inspectorRole = document.getElementById("inspectorRole");
+      const inspectorDesc = document.getElementById("inspectorDesc");
+      const inspectorDirection = document.getElementById("inspectorDirection");
+      const inspectorScenario = document.getElementById("inspectorScenario");
+      const inspectorWireText = document.getElementById("inspectorWireText");
+
+      if (sheetTitle) sheetTitle.innerText = `[NODE 0${nodeIndex + 1}: ${details.title.toUpperCase()}]`;
+      if (inspectorRole) inspectorRole.innerText = details.title;
+      if (inspectorDesc) inspectorDesc.innerText = details.description;
+      if (inspectorDirection) inspectorDirection.innerText = details.direction;
+      if (inspectorScenario) inspectorScenario.innerText = scenario.name;
+      if (inspectorWireText) inspectorWireText.innerText = details.formattedWireText;
+
+      showInspector();
+    }
+
+    function showInspector() {
+      const drawer = document.getElementById("sheetDrawer");
+      const backdrop = document.getElementById("sheetBackdrop");
+      if (drawer) drawer.classList.add("sheet-active");
+      if (backdrop) backdrop.classList.add("active");
+    }
+
+    function hideInspector() {
+      const drawer = document.getElementById("sheetDrawer");
+      const backdrop = document.getElementById("sheetBackdrop");
+      if (drawer) drawer.classList.remove("sheet-active");
+      if (backdrop) backdrop.classList.remove("active");
+    }
+
+    function switchInspectorTab(tab) {
+      activeInspectorTab = tab;
+      const tabBtnOverview = document.getElementById("tabBtnOverview");
+      const tabBtnWire = document.getElementById("tabBtnWire");
+      const overviewPane = document.getElementById("overviewPane");
+      const wirePane = document.getElementById("wirePane");
+
+      if (tab === "OVERVIEW") {
+        if (tabBtnOverview) tabBtnOverview.classList.add("active");
+        if (tabBtnWire) tabBtnWire.classList.remove("active");
+        if (overviewPane) overviewPane.style.display = "flex";
+        if (wirePane) wirePane.style.display = "none";
+      } else {
+        if (tabBtnOverview) tabBtnOverview.classList.remove("active");
+        if (tabBtnWire) tabBtnWire.classList.add("active");
+        if (overviewPane) overviewPane.style.display = "none";
+        if (wirePane) wirePane.style.display = "flex";
+      }
+    }
+
+    function copyWireData() {
+      const wireText = document.getElementById("inspectorWireText");
+      if (wireText && navigator.clipboard) {
+        navigator.clipboard.writeText(wireText.innerText)
+          .then(() => alertToast("COPIED TO CLIPBOARD"))
+          .catch(() => {});
+      }
+    }
+
+    function alertToast(msg) {
+      const badge = document.getElementById("engineStatusBadge");
+      if (badge) {
+        const old = badge.innerText;
+        badge.innerText = msg;
+        setTimeout(() => { badge.innerText = old; }, 1500);
+      }
+    }
+
+    /* State Persistence Helpers */
+    function updateStorageFooter() {
+      if (!storageEngine) return;
+      const state = storageEngine.load();
+      const footer = document.getElementById("footerStats");
+      if (footer) {
+        footer.innerText = `RUNS: ${state.totalRuns} (201:${state.scenarioRuns["201-created"]} 401:${state.scenarioRuns["401-unauthorized"]} 504:${state.scenarioRuns["504-timeout"]}) \u2022 v2`;
+      }
+    }
+
+    function handleResetStorage() {
+      if (storageEngine) {
+        storageEngine.reset();
+        updateStorageFooter();
+        alertToast("STATS RESET");
+      }
     }
 
     window.addEventListener("DOMContentLoaded", () => {
       applyTheme(currentTheme);
-      initEngine();
+      initLab();
     });
   </script>
 </body>
