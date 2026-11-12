@@ -272,6 +272,151 @@
       box-shadow: inset 1px 1px 0px #000000;
     }
 
+    /* View Mode Switcher (Network vs Sequence) */
+    .view-mode-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .view-mode-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-retro);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: all 0.15s ease;
+    }
+
+    .view-mode-pill:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    .view-mode-pill.active {
+      border-color: var(--border-active);
+      color: var(--accent-primary-text);
+      background: var(--border-active);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    /* Isometric Network Stage */
+    .isometric-canvas-wrapper {
+      position: relative;
+      background: var(--bg-card);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-retro);
+      padding: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .iso-network-svg {
+      width: 100%;
+      height: auto;
+      min-height: 200px;
+      max-height: 240px;
+      display: block;
+      touch-action: manipulation;
+    }
+
+    .iso-grid-line {
+      stroke: var(--border-subtle);
+      opacity: 0.35;
+    }
+
+    .iso-wire {
+      transition: stroke 0.2s ease, stroke-dashoffset 0.3s ease;
+    }
+
+    .iso-wire.iso-wire-idle {
+      stroke: var(--border-subtle);
+      stroke-width: 1.5;
+      opacity: 0.45;
+    }
+
+    .iso-wire.iso-wire-active {
+      stroke: var(--border-active);
+      stroke-width: 2.5;
+      opacity: 1;
+      animation: isoWirePulse 1.2s linear infinite;
+    }
+
+    @keyframes isoWirePulse {
+      from { stroke-dashoffset: 14; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    .iso-node {
+      outline: none;
+      transition: transform 0.15s ease;
+    }
+
+    .iso-node:hover, .iso-node:focus-visible {
+      filter: brightness(1.2);
+    }
+
+    .iso-node-halo {
+      fill: var(--bg-inset);
+      stroke: var(--border-subtle);
+      stroke-width: 1;
+      transition: all 0.2s ease;
+    }
+
+    .iso-node.active .iso-node-halo {
+      fill: var(--border-active);
+      fill-opacity: 0.25;
+      stroke: var(--border-active);
+      stroke-width: 2;
+      filter: drop-shadow(0 0 6px var(--border-active));
+    }
+
+    .iso-node.active {
+      color: var(--border-active);
+    }
+
+    .iso-node.passed .iso-node-halo {
+      fill: var(--accent-success);
+      fill-opacity: 0.15;
+      stroke: var(--accent-success);
+      stroke-width: 1.5;
+    }
+
+    .iso-node.passed {
+      color: var(--accent-success);
+    }
+
+    .iso-node.idle {
+      color: var(--text-secondary);
+    }
+
+    .iso-node-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      fill: var(--text-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .iso-node-ip {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      fill: var(--text-tertiary);
+    }
+
     /* Subway Track Visualizer */
     .pipeline-track {
       position: relative;
@@ -326,8 +471,8 @@
     }
 
     .node-tech-icon {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       stroke: currentColor;
       transition: transform 0.15s ease;
       display: block;
@@ -735,8 +880,36 @@
         </button>
       </div>
 
+      <!-- Display View Mode Switcher: Network (Isometric) vs Sequence (Subway) -->
+      <div class="view-mode-bar" role="tablist" aria-label="Pipeline Display Mode">
+        <button class="view-mode-pill active" id="btnViewNetwork" onclick="switchViewMode('network')" role="tab" aria-selected="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          NETWORK
+        </button>
+        <button class="view-mode-pill" id="btnViewSequence" onclick="switchViewMode('sequence')" role="tab" aria-selected="false">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <circle cx="3" cy="6" r="1.5" fill="currentColor"></circle>
+            <circle cx="3" cy="12" r="1.5" fill="currentColor"></circle>
+            <circle cx="3" cy="18" r="1.5" fill="currentColor"></circle>
+          </svg>
+          SEQUENCE
+        </button>
+      </div>
+
+      <!-- Isometric Network Stage Container -->
+      <div id="isometricNetworkView">
+        <!-- Rendered via RequestFlowEngine.renderIsometricNetworkMap -->
+      </div>
+
       <!-- Subway Track with Technical Blueprint Icons -->
-      <div class="pipeline-track" id="subwayTrack">
+      <div class="pipeline-track" id="subwayTrack" style="display: none;">
         <div class="track-rail"></div>
         <div id="subwayTrackNodes">
           <!-- Dynamically generated via RequestFlowEngine.renderSubwayTrack -->
@@ -890,6 +1063,12 @@
         trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(state.currentNode, state.direction, scenario.haltNode);
       }
 
+      // Update Isometric Network Diagram (protocol-explorer style)
+      const isoView = document.getElementById("isometricNetworkView");
+      if (isoView && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderIsometricNetworkMap) {
+        isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(state.currentNode, state.direction, scenario.haltNode);
+      }
+
       // Update Play/Pause button text
       const playBtn = document.getElementById("btnPlayPause");
       if (playBtn) {
@@ -973,6 +1152,31 @@
           }
         }
       });
+    }
+
+    let currentViewMode = "network";
+
+    function switchViewMode(mode) {
+      currentViewMode = mode;
+      const btnNet = document.getElementById("btnViewNetwork");
+      const btnSeq = document.getElementById("btnViewSequence");
+      const netView = document.getElementById("isometricNetworkView");
+      const seqView = document.getElementById("subwayTrack");
+
+      if (mode === "network") {
+        if (btnNet) { btnNet.classList.add("active"); btnNet.setAttribute("aria-selected", "true"); }
+        if (btnSeq) { btnSeq.classList.remove("active"); btnSeq.setAttribute("aria-selected", "false"); }
+        if (netView) netView.style.display = "block";
+        if (seqView) seqView.style.display = "none";
+      } else {
+        if (btnNet) { btnNet.classList.remove("active"); btnNet.setAttribute("aria-selected", "false"); }
+        if (btnSeq) { btnSeq.classList.add("active"); btnSeq.setAttribute("aria-selected", "true"); }
+        if (netView) netView.style.display = "none";
+        if (seqView) seqView.style.display = "flex";
+      }
+      if (engine) {
+        updateView(engine.getState());
+      }
     }
 
     function onPipelineComplete(state) {

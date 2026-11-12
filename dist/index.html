@@ -272,6 +272,151 @@
       box-shadow: inset 1px 1px 0px #000000;
     }
 
+    /* View Mode Switcher (Network vs Sequence) */
+    .view-mode-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .view-mode-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-retro);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: all 0.15s ease;
+    }
+
+    .view-mode-pill:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    .view-mode-pill.active {
+      border-color: var(--border-active);
+      color: var(--accent-primary-text);
+      background: var(--border-active);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    /* Isometric Network Stage */
+    .isometric-canvas-wrapper {
+      position: relative;
+      background: var(--bg-card);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-retro);
+      padding: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .iso-network-svg {
+      width: 100%;
+      height: auto;
+      min-height: 200px;
+      max-height: 240px;
+      display: block;
+      touch-action: manipulation;
+    }
+
+    .iso-grid-line {
+      stroke: var(--border-subtle);
+      opacity: 0.35;
+    }
+
+    .iso-wire {
+      transition: stroke 0.2s ease, stroke-dashoffset 0.3s ease;
+    }
+
+    .iso-wire.iso-wire-idle {
+      stroke: var(--border-subtle);
+      stroke-width: 1.5;
+      opacity: 0.45;
+    }
+
+    .iso-wire.iso-wire-active {
+      stroke: var(--border-active);
+      stroke-width: 2.5;
+      opacity: 1;
+      animation: isoWirePulse 1.2s linear infinite;
+    }
+
+    @keyframes isoWirePulse {
+      from { stroke-dashoffset: 14; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    .iso-node {
+      outline: none;
+      transition: transform 0.15s ease;
+    }
+
+    .iso-node:hover, .iso-node:focus-visible {
+      filter: brightness(1.2);
+    }
+
+    .iso-node-halo {
+      fill: var(--bg-inset);
+      stroke: var(--border-subtle);
+      stroke-width: 1;
+      transition: all 0.2s ease;
+    }
+
+    .iso-node.active .iso-node-halo {
+      fill: var(--border-active);
+      fill-opacity: 0.25;
+      stroke: var(--border-active);
+      stroke-width: 2;
+      filter: drop-shadow(0 0 6px var(--border-active));
+    }
+
+    .iso-node.active {
+      color: var(--border-active);
+    }
+
+    .iso-node.passed .iso-node-halo {
+      fill: var(--accent-success);
+      fill-opacity: 0.15;
+      stroke: var(--accent-success);
+      stroke-width: 1.5;
+    }
+
+    .iso-node.passed {
+      color: var(--accent-success);
+    }
+
+    .iso-node.idle {
+      color: var(--text-secondary);
+    }
+
+    .iso-node-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      fill: var(--text-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .iso-node-ip {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      fill: var(--text-tertiary);
+    }
+
     /* Subway Track Visualizer */
     .pipeline-track {
       position: relative;
@@ -326,8 +471,8 @@
     }
 
     .node-tech-icon {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       stroke: currentColor;
       transition: transform 0.15s ease;
       display: block;
@@ -735,8 +880,36 @@
         </button>
       </div>
 
+      <!-- Display View Mode Switcher: Network (Isometric) vs Sequence (Subway) -->
+      <div class="view-mode-bar" role="tablist" aria-label="Pipeline Display Mode">
+        <button class="view-mode-pill active" id="btnViewNetwork" onclick="switchViewMode('network')" role="tab" aria-selected="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          NETWORK
+        </button>
+        <button class="view-mode-pill" id="btnViewSequence" onclick="switchViewMode('sequence')" role="tab" aria-selected="false">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <circle cx="3" cy="6" r="1.5" fill="currentColor"></circle>
+            <circle cx="3" cy="12" r="1.5" fill="currentColor"></circle>
+            <circle cx="3" cy="18" r="1.5" fill="currentColor"></circle>
+          </svg>
+          SEQUENCE
+        </button>
+      </div>
+
+      <!-- Isometric Network Stage Container -->
+      <div id="isometricNetworkView">
+        <!-- Rendered via RequestFlowEngine.renderIsometricNetworkMap -->
+      </div>
+
       <!-- Subway Track with Technical Blueprint Icons -->
-      <div class="pipeline-track" id="subwayTrack">
+      <div class="pipeline-track" id="subwayTrack" style="display: none;">
         <div class="track-rail"></div>
         <div id="subwayTrackNodes">
           <!-- Dynamically generated via RequestFlowEngine.renderSubwayTrack -->
@@ -865,6 +1038,7 @@ var RequestFlowEngine = (() => {
     migrateState: () => migrateState,
     migrateV1ToV2: () => migrateV1ToV2,
     migrateV2ToV3: () => migrateV2ToV3,
+    renderIsometricNetworkMap: () => renderIsometricNetworkMap,
     renderNodeComponent: () => renderNodeComponent,
     renderSubwayTrack: () => renderSubwayTrack
   });
@@ -1278,85 +1452,121 @@ var RequestFlowEngine = (() => {
 
   // src/features/01-pipeline-explorer/node-component.ts
   var NODE_ICONS = {
-    // 1. Client: Technical isometric workstation laptop with screen & keyboard
+    // 1. Client: Isometric Workstation Laptop with tilted screen, content lines & keyboard deck
     client: `
-    <svg viewBox="0 0 32 32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Screen display -->
-      <polygon points="16,3 28,9 28,19 16,13" />
-      <polygon points="16,3 4,9 4,19 16,13" />
-      <!-- Screen content lines -->
-      <line x1="8" y1="11" x2="14" y2="14" />
-      <line x1="8" y1="13.5" x2="12" y2="15.5" />
-      <!-- Keyboard base -->
-      <polygon points="16,13 28,19 16,25 4,19" />
-      <polygon points="4,19 16,25 16,27 4,21" />
-      <polygon points="16,25 28,19 28,21 16,27" />
-      <!-- Keyboard keys detail -->
-      <line x1="12" y1="18.5" x2="20" y2="22.5" />
+    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <!-- Laptop Screen Bezel -->
+      <polygon points="6,5 22,1 22,13 6,17" />
+      <!-- Screen Display Area -->
+      <polygon points="8,6.5 20,3.5 20,12 8,15" stroke-width="1" />
+      <!-- Window Titlebar & Content Lines -->
+      <line x1="9" y1="7.5" x2="19" y2="5" stroke-width="1" />
+      <line x1="9" y1="9.5" x2="15" y2="8" stroke-width="1" />
+      <line x1="9" y1="11.5" x2="14" y2="10.2" stroke-width="1" />
+      <line x1="9" y1="13.5" x2="17" y2="11.5" stroke-width="1" />
+      <!-- Keyboard Base -->
+      <polygon points="6,17 22,13 27,21 11,25" />
+      <!-- Base Chassis Drop Thickness -->
+      <polyline points="11,25 11,27 27,23 27,21" />
+      <!-- Trackpad -->
+      <polygon points="16,22 20,21 21.5,23.5 17.5,24.5" stroke-width="0.8" />
+      <!-- Keyboard Key Rows -->
+      <line x1="9.5" y1="18.5" x2="21" y2="15.5" stroke-width="0.8" />
+      <line x1="11" y1="20.5" x2="22.5" y2="17.5" stroke-width="0.8" />
     </svg>
   `.trim(),
-    // 2. Network & TLS: Technical isometric Internet cloud with wireframe globe
+    // 2. Network & TLS: Isometric Internet Cloud with Embedded Wireframe Globe
     network: `
-    <svg viewBox="0 0 32 32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Isometric Cloud Outline -->
-      <path d="M10,21 C6,21 4,18 5,14 C5.5,11.5 8,10 11,10.5 C12.5,7 16.5,6 20,7.5 C23,9 24.5,12 24,14.5 C26.5,15 28,17.5 27,20 C26,22 23.5,22.5 21,22 L10,22 Z" />
+    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <!-- Cloud Perimeter -->
+      <path d="M8,22 C4.5,22 3.5,19 4.5,15.5 C5.2,13 7.5,11.5 10,12 C11.5,8 15.5,7 19,8.5 C22.5,10 23.5,13 23,15.5 C25.5,16 27.5,18 27,20.5 C26.5,22.2 24.5,22.5 22.5,22.5 L8,22.5 Z" />
       <!-- Embedded Wireframe Globe -->
-      <circle cx="16" cy="15" r="4.5" />
-      <ellipse cx="16" cy="15" rx="2" ry="4.5" />
-      <line x1="11.5" y1="15" x2="20.5" y2="15" />
-      <!-- Transport Waves -->
-      <path d="M7,26 L16,29 L25,26" stroke-dasharray="2 2" />
+      <circle cx="15.5" cy="15.5" r="5" stroke-width="1.2" />
+      <ellipse cx="15.5" cy="15.5" rx="2.2" ry="5" stroke-width="1" />
+      <line x1="10.5" y1="15.5" x2="20.5" y2="15.5" stroke-width="1" />
+      <line x1="15.5" y1="10.5" x2="15.5" y2="20.5" stroke-width="1" />
+      <!-- Signal Pulse Waves -->
+      <path d="M7,26 L15.5,28.5 L24,26" stroke-dasharray="2 1.5" stroke-width="1.2" />
     </svg>
   `.trim(),
-    // 3. API Gateway: Technical isometric network router appliance with antenna & LED array
+    // 3. API Gateway: Isometric Network Router with Vertical Antenna, LEDs & Ethernet Port
     gateway: `
-    <svg viewBox="0 0 32 32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Router top surface -->
-      <polygon points="16,9 27,14 16,19 5,14" />
-      <!-- Router front left & right chassis -->
-      <polygon points="5,14 16,19 16,25 5,20" />
-      <polygon points="16,19 27,14 27,20 16,25" />
-      <!-- Router Antenna -->
-      <line x1="16" y1="9" x2="16" y2="3" />
-      <circle cx="16" cy="2.5" r="1" fill="currentColor" />
-      <!-- LED indicators & port vents -->
-      <circle cx="8" cy="18" r="0.75" fill="currentColor" />
-      <circle cx="11" cy="19.5" r="0.75" fill="currentColor" />
-      <circle cx="14" cy="21" r="0.75" fill="currentColor" />
-      <line x1="19" y1="21.5" x2="24" y2="19" />
+    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <!-- Router Top Face -->
+      <polygon points="7,13 18,9 27,14 16,18" />
+      <!-- Router Left Chassis Wall -->
+      <polygon points="7,13 16,18 16,24 7,19" />
+      <!-- Router Right Front Panel -->
+      <polygon points="16,18 27,14 27,20 16,24" />
+      <!-- Vertical Antenna with Node Tip -->
+      <line x1="13" y1="11" x2="13" y2="3.5" stroke-width="1.5" />
+      <circle cx="13" cy="3" r="1.2" fill="currentColor" />
+      <!-- Front RJ45 Ethernet Port -->
+      <polygon points="9.5,17.5 13.5,19.5 13.5,21.5 9.5,19.5" stroke-width="0.8" />
+      <!-- Activity Vent Slit -->
+      <line x1="18.5" y1="21.5" x2="24.5" y2="18.5" stroke-width="1" />
+      <!-- Status LED Indicators -->
+      <circle cx="18" cy="19.5" r="0.6" fill="currentColor" />
+      <circle cx="20" cy="18.5" r="0.6" fill="currentColor" />
+      <circle cx="22" cy="17.5" r="0.6" fill="currentColor" />
+      <circle cx="24" cy="16.5" r="0.6" fill="currentColor" />
+      <!-- Top Vent Slits -->
+      <line x1="18.5" y1="11.5" x2="20" y2="12.2" stroke-width="0.8" />
+      <line x1="20.5" y1="12.5" x2="22" y2="13.2" stroke-width="0.8" />
+      <line x1="22.5" y1="13.5" x2="24" y2="14.2" stroke-width="0.8" />
     </svg>
   `.trim(),
-    // 4. Backend App: Technical isometric server rack / compute module with slots & CPU
+    // 4. Backend App: Isometric Server Rack Tower with 3 Modular Blade Trays & Dual LEDs
     backend: `
-    <svg viewBox="0 0 32 32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Top rack server -->
-      <polygon points="16,4 27,9 16,14 5,9" />
-      <polygon points="5,9 16,14 16,18 5,13" />
-      <polygon points="16,14 27,9 27,13 16,18" />
-      <!-- Middle rack shelf -->
-      <polygon points="5,14.5 16,19.5 16,23.5 5,18.5" />
-      <polygon points="16,19.5 27,14.5 27,18.5 16,23.5" />
-      <!-- Bottom rack shelf -->
-      <polygon points="5,20 16,25 16,29 5,24" />
-      <polygon points="16,25 27,20 27,24 16,29" />
-      <!-- Status LEDs on shelves -->
-      <circle cx="8" cy="12" r="0.75" fill="currentColor" />
-      <circle cx="8" cy="17.5" r="0.75" fill="currentColor" />
-      <circle cx="8" cy="23" r="0.75" fill="currentColor" />
+    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <!-- Server Cabinet Top Plate -->
+      <polygon points="9,9 18,5 26,9 17,13" />
+      <!-- Server Left Side Panel -->
+      <polygon points="9,9 17,13 17,27 9,23" />
+      <!-- Server Front Right Panel -->
+      <polygon points="17,13 26,9 26,23 17,27" />
+      <!-- Blade 1 Divider & Vents -->
+      <line x1="17" y1="17.5" x2="26" y2="13.5" stroke-width="1" />
+      <line x1="19" y1="16" x2="23" y2="14" stroke-width="0.8" />
+      <circle cx="24.2" cy="11.8" r="0.6" fill="currentColor" />
+      <circle cx="25.2" cy="11.3" r="0.6" fill="currentColor" />
+      <!-- Blade 2 Divider & Vents -->
+      <line x1="17" y1="22" x2="26" y2="18" stroke-width="1" />
+      <line x1="19" y1="20.5" x2="23" y2="18.5" stroke-width="0.8" />
+      <circle cx="24.2" cy="16.3" r="0.6" fill="currentColor" />
+      <circle cx="25.2" cy="15.8" r="0.6" fill="currentColor" />
+      <!-- Blade 3 Vents & LEDs -->
+      <line x1="19" y1="25" x2="23" y2="23" stroke-width="0.8" />
+      <circle cx="24.2" cy="20.8" r="0.6" fill="currentColor" />
+      <circle cx="25.2" cy="20.3" r="0.6" fill="currentColor" />
+      <!-- Chassis Feet -->
+      <line x1="11" y1="23.5" x2="11" y2="25" stroke-width="1.2" />
+      <line x1="17" y1="27" x2="17" y2="28.5" stroke-width="1.2" />
+      <line x1="25" y1="23.5" x2="25" y2="25" stroke-width="1.2" />
     </svg>
   `.trim(),
-    // 5. Database: Technical isometric PostgreSQL storage cylinder stack with platters
+    // 5. Database: Isometric Multi-Tier PostgreSQL Cylinders with Platters & Read Heads
     database: `
-    <svg viewBox="0 0 32 32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Top magnetic disk cylinder -->
-      <ellipse cx="16" cy="7" rx="10" ry="4" />
-      <path d="M6,7 L6,13 C6,15.2 10.5,17 16,17 C21.5,17 26,15.2 26,13 L26,7" />
-      <!-- Middle platter tier -->
-      <path d="M6,13 L6,19 C6,21.2 10.5,23 16,23 C21.5,23 26,21.2 26,19 L26,13" />
-      <!-- Bottom platter tier -->
-      <path d="M6,19 L6,25 C6,27.2 10.5,29 16,29 C21.5,29 26,27.2 26,25 L26,19" />
-      <!-- Platter center line / read head -->
-      <line x1="21" y1="13" x2="25" y2="11" />
+    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <!-- Top Disk Platter Cap -->
+      <ellipse cx="16" cy="7.5" rx="10" ry="3.5" />
+      <!-- Tier 1 Cylinder -->
+      <line x1="6" y1="7.5" x2="6" y2="13" />
+      <line x1="26" y1="7.5" x2="26" y2="13" />
+      <path d="M6,13 C6,15.5 10.5,17 16,17 C21.5,17 26,15.5 26,13" />
+      <line x1="19" y1="11.5" x2="23" y2="10" stroke-width="0.8" />
+      <!-- Tier 2 Cylinder -->
+      <line x1="6" y1="13" x2="6" y2="18.5" />
+      <line x1="26" y1="13" x2="26" y2="18.5" />
+      <path d="M6,18.5 C6,21 10.5,22.5 16,22.5 C21.5,22.5 26,21 26,18.5" />
+      <line x1="19" y1="17" x2="23" y2="15.5" stroke-width="0.8" />
+      <!-- Tier 3 Cylinder Base -->
+      <line x1="6" y1="18.5" x2="6" y2="24" />
+      <line x1="26" y1="18.5" x2="26" y2="24" />
+      <path d="M6,24 C6,26.5 10.5,28 16,28 C21.5,28 26,26.5 26,24" />
+      <line x1="19" y1="22.5" x2="23" y2="21" stroke-width="0.8" />
+      <!-- Database Status LED -->
+      <circle cx="21" cy="25.5" r="0.75" fill="currentColor" />
     </svg>
   `.trim()
   };
@@ -1435,6 +1645,70 @@ var RequestFlowEngine = (() => {
       }
       return renderNodeComponent(config, { state, badgeText });
     }).join("\n");
+  }
+  function renderIsometricNetworkMap(activeNodeIndex = 0, direction = "DOWNSTREAM", haltNode = 4) {
+    const nodePositions = [
+      { index: 0, x: 65, y: 155, name: "Client", ip: "192.168.1.10", id: "client" },
+      { index: 1, x: 260, y: 150, name: "Network", ip: "198.51.100.42", id: "network" },
+      { index: 2, x: 165, y: 105, name: "Router", ip: "192.168.1.1", id: "gateway" },
+      { index: 3, x: 340, y: 70, name: "Web Server", ip: "upstream:8080", id: "backend" },
+      { index: 4, x: 250, y: 35, name: "Database", ip: "203.0.113.10", id: "database" }
+    ];
+    const wires = [
+      { from: 0, to: 2, d: "M 85 140 L 145 115" },
+      { from: 2, to: 1, d: "M 185 115 L 240 140" },
+      { from: 1, to: 3, d: "M 275 135 L 325 85" },
+      { from: 3, to: 4, d: "M 320 65 L 270 45" }
+    ];
+    const wireSvg = wires.map((wire, idx) => {
+      const isWireActive = direction === "DOWNSTREAM" && activeNodeIndex > idx || direction === "UPSTREAM" && activeNodeIndex <= idx && idx < haltNode;
+      const strokeClass = isWireActive ? "iso-wire-active" : "iso-wire-idle";
+      return `<path d="${wire.d}" class="iso-wire ${strokeClass}" stroke-dasharray="4 3" fill="none" />`;
+    }).join("\n");
+    const nodesSvg = nodePositions.map((pos) => {
+      let state = "IDLE";
+      if (pos.index === activeNodeIndex) {
+        state = "ACTIVE";
+      } else if (direction === "DOWNSTREAM" && pos.index < activeNodeIndex || direction === "UPSTREAM" && pos.index > activeNodeIndex && pos.index <= haltNode) {
+        state = "PASSED";
+      }
+      const nodeClass = state === "ACTIVE" ? "iso-node active" : state === "PASSED" ? "iso-node passed" : "iso-node idle";
+      const icon = NODE_ICONS[pos.id] || "";
+      return `
+      <g class="${nodeClass}" id="iso-node-${pos.index}" onclick="inspectNode(${pos.index})" cursor="pointer" role="button" tabindex="0">
+        <!-- Isometric Ambient Halo -->
+        <ellipse cx="${pos.x}" cy="${pos.y + 8}" rx="24" ry="12" class="iso-node-halo" />
+        <!-- Technical Node Icon Container -->
+        <g transform="translate(${pos.x - 16}, ${pos.y - 12})">
+          ${icon}
+        </g>
+        <!-- Technical Labels -->
+        <text x="${pos.x}" y="${pos.y + 26}" class="iso-node-label" text-anchor="middle">${pos.name}</text>
+        <text x="${pos.x}" y="${pos.y + 36}" class="iso-node-ip" text-anchor="middle">${pos.ip}</text>
+      </g>
+    `;
+    }).join("\n");
+    return `
+    <div class="isometric-canvas-wrapper" id="isometricCanvas">
+      <svg viewBox="0 0 400 210" class="iso-network-svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <pattern id="isoGrid" width="40" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 0 10 L 20 0 L 40 10 L 20 20 Z" fill="none" class="iso-grid-line" stroke-width="0.5" />
+          </pattern>
+        </defs>
+        <!-- Isometric Grid Background -->
+        <rect width="100%" height="100%" fill="url(#isoGrid)" opacity="0.65" />
+        <!-- Connecting Isometric Wires -->
+        <g class="iso-wires-group">
+          ${wireSvg}
+        </g>
+        <!-- Isometric Nodes -->
+        <g class="iso-nodes-group">
+          ${nodesSvg}
+        </g>
+      </svg>
+    </div>
+  `.trim();
   }
 
   // src/features/02-stage-inspector/inspector.ts
@@ -1756,6 +2030,12 @@ var RequestFlowEngine = (() => {
         trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(state.currentNode, state.direction, scenario.haltNode);
       }
 
+      // Update Isometric Network Diagram (protocol-explorer style)
+      const isoView = document.getElementById("isometricNetworkView");
+      if (isoView && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderIsometricNetworkMap) {
+        isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(state.currentNode, state.direction, scenario.haltNode);
+      }
+
       // Update Play/Pause button text
       const playBtn = document.getElementById("btnPlayPause");
       if (playBtn) {
@@ -1839,6 +2119,31 @@ var RequestFlowEngine = (() => {
           }
         }
       });
+    }
+
+    let currentViewMode = "network";
+
+    function switchViewMode(mode) {
+      currentViewMode = mode;
+      const btnNet = document.getElementById("btnViewNetwork");
+      const btnSeq = document.getElementById("btnViewSequence");
+      const netView = document.getElementById("isometricNetworkView");
+      const seqView = document.getElementById("subwayTrack");
+
+      if (mode === "network") {
+        if (btnNet) { btnNet.classList.add("active"); btnNet.setAttribute("aria-selected", "true"); }
+        if (btnSeq) { btnSeq.classList.remove("active"); btnSeq.setAttribute("aria-selected", "false"); }
+        if (netView) netView.style.display = "block";
+        if (seqView) seqView.style.display = "none";
+      } else {
+        if (btnNet) { btnNet.classList.remove("active"); btnNet.setAttribute("aria-selected", "false"); }
+        if (btnSeq) { btnSeq.classList.add("active"); btnSeq.setAttribute("aria-selected", "true"); }
+        if (netView) netView.style.display = "none";
+        if (seqView) seqView.style.display = "flex";
+      }
+      if (engine) {
+        updateView(engine.getState());
+      }
     }
 
     function onPipelineComplete(state) {
