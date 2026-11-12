@@ -14,12 +14,14 @@ Build, test, and deploy a self-contained, mobile-first HTTP lifecycle learning l
 
 ### Phase 1: Environment & Tooling Setup
 - **`package.json`**: Configure Node.js ESM project scripts:
-  - `npm test`: Runs Vitest in headless mode (`vitest run`).
+  - `npm test`: Runs Vitest with native TypeScript support (`vitest run`).
   - `npm run test:watch`: Runs Vitest in interactive watch mode (`vitest`).
+  - `npm run typecheck`: Runs strict TypeScript type checking (`tsc --noEmit`).
   - `npm run build`: Executes `node scripts/bundle.js` to compile `src/` into `dist/index.html`.
-  - `npm run lint`: Executes syntax validation via `node --check`.
-  - `npm run validate`: Runs lint $\to$ tests $\to$ build pipeline.
-- **`scripts/bundle.js`**: Build compiler that injects CSS, core JavaScript, and UI templates into a single self-contained `dist/index.html` ($<1\text{ MB}$, zero external CDNs).
+  - `npm run lint`: Executes TypeScript typecheck (`tsc --noEmit`).
+  - `npm run validate`: Runs typecheck $\to$ tests $\to$ build pipeline (`npm run lint && npm test && npm run build`).
+- **`tsconfig.json`**: Strict ES2022 / NodeNext TypeScript configuration.
+- **`scripts/bundle.js`**: Build compiler that packages CSS, TypeScript components (transpiled via esbuild), and templates into a single self-contained `dist/index.html` ($<1\text{ MB}$, zero external CDNs).
 
 ---
 

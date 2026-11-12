@@ -7,12 +7,13 @@ These rules govern all agent and human engineering on **RequestFlow** and must b
 ## 1. Tech Stack & Environment Versions
 
 - **Host & Runtime**: Node.js `v20.19.x`, npm `10.8.x`, ES Modules (`"type": "module"`).
-- **Frontend Architecture**: Decoupled Modern Vanilla Web Components (ES2022, HTML5, CSS3 with CSS Custom Properties). Zero heavy framework overhead to ensure instant mobile execution.
-- **Simulated Backend Engine**: Headless, deterministic JavaScript state machine (`src/core/engine.js`) simulating HTTP/1.1, TLS 1.3 handshake, Nginx Gateway, and Express/Spring-style routing.
+- **Language**: **TypeScript** (`^5.x` / ES2022) with strict type checking (`tsc --noEmit`).
+- **Frontend Architecture**: Decoupled Modern Vanilla Web Components (ES2022 TypeScript/HTML5/CSS3 with CSS Custom Properties). Zero heavy framework overhead to ensure instant mobile execution.
+- **Simulated Backend Engine**: Headless, deterministic TypeScript state machine (`src/features/01-pipeline-explorer/engine.ts`) simulating HTTP/1.1, TLS 1.3 handshake, Nginx Gateway, and Express/Spring-style routing.
 - **Database Layer**:
-  - Deterministic PostgreSQL ACID transaction simulator (`src/core/scenarios.js`).
-  - Client-side persistence: Browser `localStorage` with explicit schema versioning and zero-loss migration handlers (`src/core/storage.js`).
-- **Unit & Integration Test Runner**: **Vitest** (`^1.6.x` / `^2.x`) for fast in-memory execution and ESM native support.
+  - Deterministic PostgreSQL ACID transaction simulator (`src/features/01-pipeline-explorer/scenarios.ts`).
+  - Client-side persistence: Browser `localStorage` with explicit schema versioning and zero-loss migration handlers (`src/features/03-state-persistence/storage.ts`).
+- **Unit & Integration Test Runner**: **Vitest** (`^2.x`) with native TypeScript execution and in-memory speed.
 - **Bundler & Packaging**: Custom zero-dependency Node.js compiler (`scripts/bundle.js`) compiling modular source into a single self-contained `dist/index.html`.
 
 ---
