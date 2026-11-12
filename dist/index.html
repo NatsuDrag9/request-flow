@@ -297,7 +297,7 @@
       align-items: center;
       justify-content: center;
       touch-action: manipulation;
-      transition: all 0.15s ease;
+      transition: all 0.25s ease;
     }
 
     .view-mode-pill:active {
@@ -339,7 +339,7 @@
     }
 
     .iso-wire {
-      transition: stroke 0.2s ease, stroke-dashoffset 0.3s ease;
+      transition: stroke 0.35s ease, stroke-dashoffset 0.4s ease;
     }
 
     .iso-wire.iso-wire-idle {
@@ -355,6 +355,14 @@
       animation: isoWirePulse 1.2s linear infinite;
     }
 
+    .iso-wire.iso-wire-in-transit {
+      stroke: var(--border-active);
+      stroke-width: 3;
+      filter: drop-shadow(0 0 6px var(--border-active));
+      opacity: 1;
+      animation: isoWirePulse 0.7s linear infinite;
+    }
+
     @keyframes isoWirePulse {
       from { stroke-dashoffset: 14; }
       to { stroke-dashoffset: 0; }
@@ -362,7 +370,7 @@
 
     .iso-node {
       outline: none;
-      transition: transform 0.15s ease;
+      transition: filter 0.25s ease;
     }
 
     .iso-node:focus-visible, .iso-node:active {
@@ -379,7 +387,7 @@
       fill: var(--bg-inset);
       stroke: var(--border-subtle);
       stroke-width: 1;
-      transition: all 0.2s ease;
+      transition: fill 0.35s ease, stroke 0.35s ease, stroke-width 0.35s ease, filter 0.35s ease;
     }
 
     .iso-node.active .iso-node-halo {
@@ -390,8 +398,48 @@
       filter: drop-shadow(0 0 6px var(--border-active));
     }
 
-    .iso-node.active {
+    .iso-node.in-transit .iso-node-halo {
+      fill: var(--border-active);
+      fill-opacity: 0.35;
+      stroke: var(--border-active);
+      stroke-width: 2;
+      animation: isoTransitPulse 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes isoTransitPulse {
+      from {
+        stroke-width: 2;
+        fill-opacity: 0.25;
+        filter: drop-shadow(0 0 4px var(--border-active));
+      }
+      to {
+        stroke-width: 2.5;
+        fill-opacity: 0.45;
+        filter: drop-shadow(0 0 12px var(--border-active));
+      }
+    }
+
+    .iso-node.active, .iso-node.in-transit {
       color: var(--border-active);
+    }
+
+    .iso-node.error, .iso-node.error text {
+      color: var(--accent-error);
+      fill: var(--accent-error);
+    }
+
+    .iso-node.error .iso-node-halo {
+      fill: var(--accent-error);
+      fill-opacity: 0.3;
+      stroke: var(--accent-error);
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 10px var(--accent-error));
+    }
+
+    .iso-wire.iso-wire-error {
+      stroke: var(--accent-error) !important;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 6px var(--accent-error));
     }
 
     .iso-node.passed .iso-node-halo {
@@ -428,18 +476,20 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      padding: 4px 0;
+      gap: 8px;
+      padding: 6px 0;
     }
 
     .track-rail {
       position: absolute;
-      top: 20px;
-      bottom: 20px;
+      top: 24px;
+      bottom: 24px;
       left: 21px;
       width: 4px;
       background: var(--border-subtle);
+      border-radius: 2px;
       z-index: 1;
+      transition: all 0.35s ease;
     }
 
     #subwayTrackNodes {
@@ -472,7 +522,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: var(--shadow-retro);
-      transition: all 0.15s ease;
+      transition: all 0.35s ease;
       flex-shrink: 0;
     }
 
@@ -480,7 +530,7 @@
       width: 26px;
       height: 26px;
       stroke: currentColor;
-      transition: transform 0.15s ease;
+      transition: transform 0.35s ease;
       display: block;
     }
 
@@ -495,7 +545,7 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: var(--shadow-retro);
-      transition: border-color 0.15s ease, background-color 0.15s ease;
+      transition: border-color 0.35s ease, background-color 0.35s ease, opacity 0.35s ease;
     }
 
     .node-info-col {
@@ -542,6 +592,7 @@
       background: var(--bg-inset);
       color: var(--text-secondary);
       flex-shrink: 0;
+      transition: all 0.35s ease;
     }
 
     /* Active Node State */
@@ -549,11 +600,11 @@
       border-color: var(--border-active);
       background: var(--border-active);
       color: var(--accent-primary-text);
-      box-shadow: 0 0 10px var(--border-active);
+      box-shadow: 0 0 12px var(--border-active);
     }
 
     .node-row.active .node-tech-icon {
-      transform: scale(1.1);
+      stroke: currentColor;
     }
 
     .node-row.active .node-card {
@@ -566,6 +617,34 @@
       color: var(--border-active);
     }
 
+    /* In-Transit Node State (Slow smooth propagation) */
+    .node-row.in-transit .node-station-dot {
+      border-color: var(--border-active);
+      box-shadow: 0 0 12px var(--border-active);
+      animation: stationTransitGlow 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes stationTransitGlow {
+      from {
+        box-shadow: 0 0 8px var(--border-active);
+        filter: brightness(1);
+      }
+      to {
+        box-shadow: 0 0 16px var(--border-active);
+        filter: brightness(1.25);
+      }
+    }
+
+    .node-row.in-transit .node-card {
+      border-color: var(--border-active);
+    }
+
+    .node-row.in-transit .node-badge {
+      border-color: var(--border-active);
+      color: var(--border-active);
+      animation: blink 0.9s infinite;
+    }
+
     /* Passed Node State */
     .node-row.passed .node-station-dot {
       border-color: var(--accent-success);
@@ -574,6 +653,30 @@
 
     .node-row.passed .node-card {
       opacity: 0.85;
+    }
+
+    /* Failed / Error Node State (Failure occurs at node) */
+    .node-row.error .node-station-dot {
+      border-color: var(--accent-error);
+      background: var(--accent-error);
+      color: #ffffff;
+      box-shadow: 0 0 14px var(--accent-error);
+    }
+
+    .node-row.error .node-card {
+      border-color: var(--accent-error);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .node-row.error .node-name {
+      color: var(--accent-error);
+    }
+
+    .node-row.error .node-badge {
+      border-color: var(--accent-error);
+      color: #ffffff;
+      background: var(--accent-error);
+      font-weight: 700;
     }
 
     /* Telemetry Well */
@@ -799,20 +902,84 @@
       gap: 10px;
     }
 
-    .wire-code-box {
+    .wire-code-container {
+      position: relative;
       background: var(--bg-inset);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      padding: 10px;
+      box-shadow: inset 1px 1px 0 #000000;
+      overflow: hidden;
+    }
+
+    .btn-copy-wire {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      z-index: 5;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 4px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: color 0.15s ease, opacity 0.15s ease;
+      box-shadow: none;
+    }
+
+    .btn-copy-wire:active {
+      transform: none;
+      box-shadow: none;
+      color: var(--border-active);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn-copy-wire:hover {
+        border-color: transparent;
+        color: var(--border-active);
+        background: transparent;
+      }
+    }
+
+    .btn-copy-wire.copied {
+      border-color: transparent;
+      color: var(--accent-success);
+    }
+
+    .copy-icon-svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+
+    .copy-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .wire-code-box {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 12px 56px 12px 12px;
       font-family: var(--font-mono);
       font-size: 11px;
       line-height: 1.45;
       color: var(--text-primary);
       white-space: pre-wrap;
       word-break: break-all;
-      box-shadow: inset 1px 1px 0 #000000;
+      box-shadow: none;
       max-height: 45dvh;
       overflow-y: auto;
+      margin: 0;
     }
 
     .overview-card {
@@ -909,9 +1076,9 @@
         </button>
       </div>
 
-      <!-- Isometric Network Stage Container -->
+      <!-- Isometric Architectural Network Stage Container -->
       <div id="isometricNetworkView">
-        <!-- Rendered via RequestFlowEngine.renderIsometricNetworkMap -->
+        <!-- Rendered via RequestFlowEngine.renderIsometricNetworkMap with our 5 backend nodes -->
       </div>
 
       <!-- Subway Track with Technical Blueprint Icons -->
@@ -990,10 +1157,17 @@
       </div>
 
       <div id="wirePane" style="display: none; flex-direction: column; gap: 8px;">
-        <pre class="wire-code-box" id="inspectorWireText"></pre>
-        <button class="btn-retro btn-retro-secondary" onclick="copyWireData()" style="min-height: 44px;">
-          [ 📋 COPY TELEMETRY ]
-        </button>
+        <div class="wire-code-container">
+          <button class="btn-copy-wire" id="btnCopyWire" onclick="copyWireData()" aria-label="Copy telemetry data" title="Copy telemetry to clipboard">
+            <!-- Standard Copy Icon: Upper Layer at Top-Right, Rear Layer at Bottom-Left -->
+            <svg class="copy-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 8H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"></path>
+              <rect x="8" y="2" width="13" height="14" rx="2" ry="2"></rect>
+            </svg>
+            <span class="copy-label" id="copyLabelText"></span>
+          </button>
+          <pre class="wire-code-box" id="inspectorWireText"></pre>
+        </div>
       </div>
     </div>
   </div>
@@ -1317,12 +1491,20 @@ var RequestFlowEngine = (() => {
     direction = "DOWNSTREAM";
     listeners = /* @__PURE__ */ new Map();
     timer = null;
-    hopDelayMs = 600;
+    stayDurationMs = 2e3;
+    // Dedicated 2.0s stay time at each station node
+    transitionDurationMs = 1e3;
+    // Dedicated 1.0s transit time between nodes
+    isTransiting = false;
+    transitionTarget = null;
     constructor(options = {}) {
       const id = options.scenarioId || "201-created";
       this.scenario = getScenario(id);
-      if (options.hopDelayMs) {
-        this.hopDelayMs = options.hopDelayMs;
+      if (options.stayDurationMs) {
+        this.stayDurationMs = options.stayDurationMs;
+      }
+      if (options.transitionDurationMs) {
+        this.transitionDurationMs = options.transitionDurationMs;
       }
     }
     getState() {
@@ -1332,7 +1514,9 @@ var RequestFlowEngine = (() => {
         direction: this.direction,
         scenarioId: this.scenario.id,
         haltNode: this.scenario.haltNode,
-        isCompleted: this.status === "HALTED_SUCCESS" || this.status === "HALTED_ERROR"
+        isCompleted: this.status === "HALTED_SUCCESS" || this.status === "HALTED_ERROR",
+        isTransiting: this.isTransiting,
+        transitionTarget: this.transitionTarget
       };
     }
     getScenario() {
@@ -1341,6 +1525,10 @@ var RequestFlowEngine = (() => {
     setScenario(scenarioId) {
       this.scenario = getScenario(scenarioId);
       this.reset();
+    }
+    setPacing(stayDurationMs, transitionDurationMs) {
+      this.stayDurationMs = stayDurationMs;
+      this.transitionDurationMs = transitionDurationMs;
     }
     on(event, listener) {
       if (!this.listeners.has(event)) {
@@ -1362,24 +1550,74 @@ var RequestFlowEngine = (() => {
         }
       }
     }
-    start(delayMs) {
+    start(delayOrOptions) {
       if (this.status === "HALTED_SUCCESS" || this.status === "HALTED_ERROR") {
         this.reset();
       }
-      if (delayMs) {
-        this.hopDelayMs = delayMs;
+      if (typeof delayOrOptions === "number") {
+        this.stayDurationMs = Math.round(delayOrOptions * 0.65);
+        this.transitionDurationMs = Math.round(delayOrOptions * 0.35);
+      } else if (delayOrOptions && typeof delayOrOptions === "object") {
+        if (delayOrOptions.stayDurationMs) this.stayDurationMs = delayOrOptions.stayDurationMs;
+        if (delayOrOptions.transitionDurationMs) this.transitionDurationMs = delayOrOptions.transitionDurationMs;
       }
       this.stopTimer();
       this.status = "IN_FLIGHT";
+      this.isTransiting = false;
+      this.transitionTarget = null;
       this.emit("stateChange", this.getState());
-      this.timer = setInterval(() => {
-        this.stepForwardInternal(true);
-      }, this.hopDelayMs);
+      this.scheduleNextCycle();
+    }
+    scheduleNextCycle() {
+      if (this.status !== "IN_FLIGHT") return;
+      this.timer = setTimeout(() => {
+        if (this.status !== "IN_FLIGHT") return;
+        const next = this.calculateNextNode();
+        if (next.isComplete) {
+          this.stopTimer();
+          this.status = this.scenario.resultStatus;
+          this.isTransiting = false;
+          this.transitionTarget = null;
+          this.emit("stateChange", this.getState());
+          this.emit("complete", this.getState());
+          return;
+        }
+        this.isTransiting = true;
+        this.transitionTarget = next.targetNode;
+        this.emit("stateChange", this.getState());
+        this.timer = setTimeout(() => {
+          if (this.status !== "IN_FLIGHT") return;
+          this.currentNode = next.targetNode;
+          this.direction = next.direction;
+          this.isTransiting = false;
+          this.transitionTarget = null;
+          this.emit("stateChange", this.getState());
+          this.emit("nodeActivate", this.currentNode, this.direction);
+          this.scheduleNextCycle();
+        }, this.transitionDurationMs);
+      }, this.stayDurationMs);
+    }
+    calculateNextNode() {
+      if (this.direction === "DOWNSTREAM") {
+        if (this.currentNode < this.scenario.haltNode) {
+          return { targetNode: this.currentNode + 1, direction: "DOWNSTREAM", isComplete: false };
+        } else {
+          return { targetNode: this.currentNode - 1, direction: "UPSTREAM", isComplete: false };
+        }
+      } else {
+        if (this.currentNode > 0) {
+          return { targetNode: this.currentNode - 1, direction: "UPSTREAM", isComplete: false };
+        } else {
+          return { targetNode: 0, direction: "UPSTREAM", isComplete: true };
+        }
+      }
     }
     pause() {
       this.stopTimer();
       if (this.status === "IN_FLIGHT") {
         this.status = "STEPPING";
+        this.isTransiting = false;
+        this.transitionTarget = null;
         this.emit("stateChange", this.getState());
       }
     }
@@ -1388,10 +1626,14 @@ var RequestFlowEngine = (() => {
       this.status = "READY";
       this.currentNode = 0;
       this.direction = "DOWNSTREAM";
+      this.isTransiting = false;
+      this.transitionTarget = null;
       this.emit("stateChange", this.getState());
     }
     stepForward() {
       this.stopTimer();
+      this.isTransiting = false;
+      this.transitionTarget = null;
       this.stepForwardInternal(false);
     }
     stepForwardInternal(isAuto) {
@@ -1426,6 +1668,8 @@ var RequestFlowEngine = (() => {
     }
     stepBackward() {
       this.stopTimer();
+      this.isTransiting = false;
+      this.transitionTarget = null;
       if (this.status === "READY") {
         return;
       }
@@ -1450,7 +1694,7 @@ var RequestFlowEngine = (() => {
     }
     stopTimer() {
       if (this.timer) {
-        clearInterval(this.timer);
+        clearTimeout(this.timer);
         this.timer = null;
       }
     }
@@ -1458,120 +1702,100 @@ var RequestFlowEngine = (() => {
 
   // src/features/01-pipeline-explorer/node-component.ts
   var NODE_ICONS = {
-    // 1. Client: Isometric Workstation Laptop with tilted screen, content lines & keyboard deck
+    // 1. Client: Workstation Laptop / Terminal Screen
     client: `
     <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Laptop Screen Bezel -->
       <polygon points="6,5 22,1 22,13 6,17" />
-      <!-- Screen Display Area -->
       <polygon points="8,6.5 20,3.5 20,12 8,15" stroke-width="1" />
-      <!-- Window Titlebar & Content Lines -->
       <line x1="9" y1="7.5" x2="19" y2="5" stroke-width="1" />
       <line x1="9" y1="9.5" x2="15" y2="8" stroke-width="1" />
       <line x1="9" y1="11.5" x2="14" y2="10.2" stroke-width="1" />
-      <line x1="9" y1="13.5" x2="17" y2="11.5" stroke-width="1" />
-      <!-- Keyboard Base -->
       <polygon points="6,17 22,13 27,21 11,25" />
-      <!-- Base Chassis Drop Thickness -->
       <polyline points="11,25 11,27 27,23 27,21" />
-      <!-- Trackpad -->
       <polygon points="16,22 20,21 21.5,23.5 17.5,24.5" stroke-width="0.8" />
-      <!-- Keyboard Key Rows -->
       <line x1="9.5" y1="18.5" x2="21" y2="15.5" stroke-width="0.8" />
-      <line x1="11" y1="20.5" x2="22.5" y2="17.5" stroke-width="0.8" />
     </svg>
   `.trim(),
-    // 2. Network & TLS: Isometric Internet Cloud with Embedded Wireframe Globe
+    // 2. Load Balancer: Edge Traffic Distributor (Ingress splitting to balanced server conduits)
+    lb: `
+    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polygon points="16,4 25,8 16,12 7,8" />
+      <polygon points="7,8 16,12 16,16 7,12" />
+      <polygon points="16,12 25,8 25,12 16,16" />
+      <circle cx="16" cy="8" r="1.5" fill="currentColor" />
+      <line x1="16" y1="1" x2="16" y2="4" stroke-width="1.5" />
+      <path d="M11,14 L6,19 L6,25" stroke-width="1.2" />
+      <path d="M16,16 L16,25" stroke-width="1.2" />
+      <path d="M21,14 L26,19 L26,25" stroke-width="1.2" />
+      <circle cx="6" cy="27" r="1.5" />
+      <circle cx="16" cy="27" r="1.5" />
+      <circle cx="26" cy="27" r="1.5" />
+    </svg>
+  `.trim(),
+    // Aliased as network for backward compatibility with scenario telemetry
     network: `
     <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Cloud Perimeter -->
-      <path d="M8,22 C4.5,22 3.5,19 4.5,15.5 C5.2,13 7.5,11.5 10,12 C11.5,8 15.5,7 19,8.5 C22.5,10 23.5,13 23,15.5 C25.5,16 27.5,18 27,20.5 C26.5,22.2 24.5,22.5 22.5,22.5 L8,22.5 Z" />
-      <!-- Embedded Wireframe Globe -->
-      <circle cx="15.5" cy="15.5" r="5" stroke-width="1.2" />
-      <ellipse cx="15.5" cy="15.5" rx="2.2" ry="5" stroke-width="1" />
-      <line x1="10.5" y1="15.5" x2="20.5" y2="15.5" stroke-width="1" />
-      <line x1="15.5" y1="10.5" x2="15.5" y2="20.5" stroke-width="1" />
-      <!-- Signal Pulse Waves -->
-      <path d="M7,26 L15.5,28.5 L24,26" stroke-dasharray="2 1.5" stroke-width="1.2" />
+      <polygon points="16,4 25,8 16,12 7,8" />
+      <polygon points="7,8 16,12 16,16 7,12" />
+      <polygon points="16,12 25,8 25,12 16,16" />
+      <circle cx="16" cy="8" r="1.5" fill="currentColor" />
+      <line x1="16" y1="1" x2="16" y2="4" stroke-width="1.5" />
+      <path d="M11,14 L6,19 L6,25" stroke-width="1.2" />
+      <path d="M16,16 L16,25" stroke-width="1.2" />
+      <path d="M21,14 L26,19 L26,25" stroke-width="1.2" />
+      <circle cx="6" cy="27" r="1.5" />
+      <circle cx="16" cy="27" r="1.5" />
+      <circle cx="26" cy="27" r="1.5" />
     </svg>
   `.trim(),
-    // 3. API Gateway: Isometric Network Router with Vertical Antenna, LEDs & Ethernet Port
+    // 3. API Gateway: Reverse Proxy & Security Routing Appliance
     gateway: `
     <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Router Top Face -->
-      <polygon points="7,13 18,9 27,14 16,18" />
-      <!-- Router Left Chassis Wall -->
-      <polygon points="7,13 16,18 16,24 7,19" />
-      <!-- Router Right Front Panel -->
-      <polygon points="16,18 27,14 27,20 16,24" />
-      <!-- Vertical Antenna with Node Tip -->
-      <line x1="13" y1="11" x2="13" y2="3.5" stroke-width="1.5" />
-      <circle cx="13" cy="3" r="1.2" fill="currentColor" />
-      <!-- Front RJ45 Ethernet Port -->
-      <polygon points="9.5,17.5 13.5,19.5 13.5,21.5 9.5,19.5" stroke-width="0.8" />
-      <!-- Activity Vent Slit -->
-      <line x1="18.5" y1="21.5" x2="24.5" y2="18.5" stroke-width="1" />
-      <!-- Status LED Indicators -->
-      <circle cx="18" cy="19.5" r="0.6" fill="currentColor" />
-      <circle cx="20" cy="18.5" r="0.6" fill="currentColor" />
-      <circle cx="22" cy="17.5" r="0.6" fill="currentColor" />
-      <circle cx="24" cy="16.5" r="0.6" fill="currentColor" />
-      <!-- Top Vent Slits -->
-      <line x1="18.5" y1="11.5" x2="20" y2="12.2" stroke-width="0.8" />
-      <line x1="20.5" y1="12.5" x2="22" y2="13.2" stroke-width="0.8" />
-      <line x1="22.5" y1="13.5" x2="24" y2="14.2" stroke-width="0.8" />
+      <polygon points="16,6 26,11 16,16 6,11" />
+      <polygon points="6,11 16,16 16,24 6,19" />
+      <polygon points="16,16 26,11 26,19 16,24" />
+      <path d="M12,14 L16,16 L20,14" stroke-width="1" />
+      <path d="M16,10 L20,12 L20,16 C20,19 16,21 16,21 C16,21 12,19 12,16 L12,12 Z" stroke-width="1" />
+      <circle cx="16" cy="15" r="0.8" fill="currentColor" />
+      <circle cx="8" cy="17" r="0.6" fill="currentColor" />
+      <circle cx="10" cy="18" r="0.6" fill="currentColor" />
+      <circle cx="22" cy="17" r="0.6" fill="currentColor" />
+      <circle cx="24" cy="16" r="0.6" fill="currentColor" />
     </svg>
   `.trim(),
-    // 4. Backend App: Isometric Server Rack Tower with 3 Modular Blade Trays & Dual LEDs
+    // 4. Backend App: Compute Server Rack Module with Modular Trays
     backend: `
     <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Server Cabinet Top Plate -->
       <polygon points="9,9 18,5 26,9 17,13" />
-      <!-- Server Left Side Panel -->
       <polygon points="9,9 17,13 17,27 9,23" />
-      <!-- Server Front Right Panel -->
       <polygon points="17,13 26,9 26,23 17,27" />
-      <!-- Blade 1 Divider & Vents -->
       <line x1="17" y1="17.5" x2="26" y2="13.5" stroke-width="1" />
       <line x1="19" y1="16" x2="23" y2="14" stroke-width="0.8" />
       <circle cx="24.2" cy="11.8" r="0.6" fill="currentColor" />
-      <circle cx="25.2" cy="11.3" r="0.6" fill="currentColor" />
-      <!-- Blade 2 Divider & Vents -->
       <line x1="17" y1="22" x2="26" y2="18" stroke-width="1" />
-      <line x1="19" y1="20.5" x2="23" y2="18.5" stroke-width="0.8" />
       <circle cx="24.2" cy="16.3" r="0.6" fill="currentColor" />
-      <circle cx="25.2" cy="15.8" r="0.6" fill="currentColor" />
-      <!-- Blade 3 Vents & LEDs -->
       <line x1="19" y1="25" x2="23" y2="23" stroke-width="0.8" />
       <circle cx="24.2" cy="20.8" r="0.6" fill="currentColor" />
-      <circle cx="25.2" cy="20.3" r="0.6" fill="currentColor" />
-      <!-- Chassis Feet -->
       <line x1="11" y1="23.5" x2="11" y2="25" stroke-width="1.2" />
       <line x1="17" y1="27" x2="17" y2="28.5" stroke-width="1.2" />
       <line x1="25" y1="23.5" x2="25" y2="25" stroke-width="1.2" />
     </svg>
   `.trim(),
-    // 5. Database: Isometric Multi-Tier PostgreSQL Cylinders with Platters & Read Heads
+    // 5. Database: PostgreSQL Multi-Tier Disk Storage Array with Platter Cylinders
     database: `
     <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Top Disk Platter Cap -->
       <ellipse cx="16" cy="7.5" rx="10" ry="3.5" />
-      <!-- Tier 1 Cylinder -->
       <line x1="6" y1="7.5" x2="6" y2="13" />
       <line x1="26" y1="7.5" x2="26" y2="13" />
       <path d="M6,13 C6,15.5 10.5,17 16,17 C21.5,17 26,15.5 26,13" />
       <line x1="19" y1="11.5" x2="23" y2="10" stroke-width="0.8" />
-      <!-- Tier 2 Cylinder -->
       <line x1="6" y1="13" x2="6" y2="18.5" />
       <line x1="26" y1="13" x2="26" y2="18.5" />
       <path d="M6,18.5 C6,21 10.5,22.5 16,22.5 C21.5,22.5 26,21 26,18.5" />
       <line x1="19" y1="17" x2="23" y2="15.5" stroke-width="0.8" />
-      <!-- Tier 3 Cylinder Base -->
       <line x1="6" y1="18.5" x2="6" y2="24" />
       <line x1="26" y1="18.5" x2="26" y2="24" />
       <path d="M6,24 C6,26.5 10.5,28 16,28 C21.5,28 26,26.5 26,24" />
-      <line x1="19" y1="22.5" x2="23" y2="21" stroke-width="0.8" />
-      <!-- Database Status LED -->
       <circle cx="21" cy="25.5" r="0.75" fill="currentColor" />
     </svg>
   `.trim()
@@ -1588,24 +1812,24 @@ var RequestFlowEngine = (() => {
     {
       index: 1,
       id: "network",
-      name: "NETWORK & TLS",
-      subtext: "DNS (8.8.8.8) \u2022 TLS 1.3",
+      name: "LOAD BALANCER",
+      subtext: "Edge LB & TLS 1.3 \u2022 Traffic Routing",
       ipAddress: "198.51.100.42",
-      iconSvg: NODE_ICONS.network
+      iconSvg: NODE_ICONS.lb
     },
     {
       index: 2,
       id: "gateway",
       name: "API GATEWAY",
-      subtext: "Nginx \u2022 Rate Limit & Proxy",
-      ipAddress: "192.168.1.1",
+      subtext: "Nginx / Envoy \u2022 Rate Limit & Proxy",
+      ipAddress: "10.0.1.1",
       iconSvg: NODE_ICONS.gateway
     },
     {
       index: 3,
       id: "backend",
       name: "BACKEND APP",
-      subtext: "Express \u2022 Auth & Routing",
+      subtext: "Express / Service \u2022 Auth & Routing",
       ipAddress: "upstream:8080",
       iconSvg: NODE_ICONS.backend
     },
@@ -1614,12 +1838,12 @@ var RequestFlowEngine = (() => {
       id: "database",
       name: "DATABASE",
       subtext: "PostgreSQL 16 \u2022 ACID Engine",
-      ipAddress: "203.0.113.10",
+      ipAddress: "10.0.2.15",
       iconSvg: NODE_ICONS.database
     }
   ];
   function renderNodeComponent(config, renderState = { state: "IDLE", badgeText: "IDLE" }) {
-    const activeClass = renderState.state === "ACTIVE" ? "active" : renderState.state === "PASSED" ? "passed" : "";
+    const activeClass = renderState.state === "ERROR" ? "error" : renderState.state === "ACTIVE" ? "active" : renderState.state === "PASSED" ? "passed" : renderState.state === "TRANSIT" ? "in-transit" : "";
     return `
     <div class="node-row ${activeClass}" id="node-row-${config.index}" onclick="inspectNode(${config.index})" role="button" tabindex="0" aria-label="Inspect ${config.name} node">
       <div class="node-station-dot" title="${config.name} (${config.ipAddress})">
@@ -1638,13 +1862,25 @@ var RequestFlowEngine = (() => {
     </div>
   `.trim();
   }
-  function renderSubwayTrack(activeNodeIndex = 0, direction = "DOWNSTREAM", haltNode = 4) {
+  function renderSubwayTrack(activeNodeIndex = 0, direction = "DOWNSTREAM", haltNode = 4, isTransiting = false, transitionTarget = null, isErrorScenario = false) {
     return PIPELINE_NODES.map((config) => {
       let state = "IDLE";
       let badgeText = "IDLE";
-      if (config.index === activeNodeIndex) {
-        state = "ACTIVE";
-        badgeText = direction === "DOWNSTREAM" ? "\u25BC REQ" : "\u25B2 RES";
+      const isFailureNode = isErrorScenario && config.index === haltNode && (activeNodeIndex >= haltNode || direction === "UPSTREAM");
+      if (isFailureNode) {
+        state = "ERROR";
+        badgeText = "\u2716 FAIL";
+      } else if (config.index === activeNodeIndex) {
+        if (isTransiting) {
+          state = "TRANSIT";
+          badgeText = "PROPAGATING...";
+        } else {
+          state = "ACTIVE";
+          badgeText = direction === "DOWNSTREAM" ? "\u25BC REQ" : "\u25B2 RES";
+        }
+      } else if (isTransiting && transitionTarget !== null && config.index === transitionTarget) {
+        state = "TRANSIT";
+        badgeText = "INCOMING";
       } else if (direction === "DOWNSTREAM" && config.index < activeNodeIndex || direction === "UPSTREAM" && config.index > activeNodeIndex && config.index <= haltNode) {
         state = "PASSED";
         badgeText = "PASS";
@@ -1652,39 +1888,46 @@ var RequestFlowEngine = (() => {
       return renderNodeComponent(config, { state, badgeText });
     }).join("\n");
   }
-  function renderIsometricNetworkMap(activeNodeIndex = 0, direction = "DOWNSTREAM", haltNode = 4) {
+  function renderIsometricNetworkMap(activeNodeIndex = 0, direction = "DOWNSTREAM", haltNode = 4, isTransiting = false, transitionTarget = null, isErrorScenario = false) {
     const nodePositions = [
       { index: 0, x: 65, y: 155, name: "Client", ip: "192.168.1.10", id: "client" },
-      { index: 1, x: 260, y: 150, name: "Network", ip: "198.51.100.42", id: "network" },
-      { index: 2, x: 165, y: 105, name: "Router", ip: "192.168.1.1", id: "gateway" },
-      { index: 3, x: 340, y: 70, name: "Web Server", ip: "upstream:8080", id: "backend" },
-      { index: 4, x: 250, y: 35, name: "Database", ip: "203.0.113.10", id: "database" }
+      { index: 1, x: 155, y: 110, name: "Load Balancer", ip: "198.51.100.42", id: "network" },
+      { index: 2, x: 235, y: 145, name: "API Gateway", ip: "10.0.1.1", id: "gateway" },
+      { index: 3, x: 295, y: 80, name: "Backend App", ip: "upstream:8080", id: "backend" },
+      { index: 4, x: 345, y: 35, name: "Database", ip: "10.0.2.15", id: "database" }
     ];
     const wires = [
-      { from: 0, to: 2, d: "M 85 140 L 145 115" },
-      { from: 2, to: 1, d: "M 185 115 L 240 140" },
-      { from: 1, to: 3, d: "M 275 135 L 325 85" },
-      { from: 3, to: 4, d: "M 320 65 L 270 45" }
+      { from: 0, to: 1, d: "M 85 145 L 135 120" },
+      { from: 1, to: 2, d: "M 175 118 L 215 138" },
+      { from: 2, to: 3, d: "M 248 132 L 282 92" },
+      { from: 3, to: 4, d: "M 308 70 L 332 45" }
     ];
     const wireSvg = wires.map((wire, idx) => {
-      const isWireActive = direction === "DOWNSTREAM" && activeNodeIndex > idx || direction === "UPSTREAM" && activeNodeIndex <= idx && idx < haltNode;
-      const strokeClass = isWireActive ? "iso-wire-active" : "iso-wire-idle";
-      return `<path d="${wire.d}" class="iso-wire ${strokeClass}" stroke-dasharray="4 3" fill="none" />`;
+      const isThisWireInTransit = isTransiting && (activeNodeIndex === wire.from && transitionTarget === wire.to || activeNodeIndex === wire.to && transitionTarget === wire.from);
+      const isWireActive = isThisWireInTransit || direction === "DOWNSTREAM" && activeNodeIndex > idx || direction === "UPSTREAM" && activeNodeIndex <= idx && idx < haltNode;
+      const isErrorReturnWire = isErrorScenario && direction === "UPSTREAM" && idx < haltNode;
+      const strokeClass = isThisWireInTransit ? isErrorReturnWire ? "iso-wire iso-wire-in-transit iso-wire-error" : "iso-wire iso-wire-in-transit" : isErrorReturnWire ? "iso-wire iso-wire-active iso-wire-error" : isWireActive ? "iso-wire iso-wire-active" : "iso-wire iso-wire-idle";
+      return `<path d="${wire.d}" class="${strokeClass}" stroke-dasharray="4 3" fill="none" />`;
     }).join("\n");
     const nodesSvg = nodePositions.map((pos) => {
       let state = "IDLE";
-      if (pos.index === activeNodeIndex) {
-        state = "ACTIVE";
+      const isFailureNode = isErrorScenario && pos.index === haltNode && (activeNodeIndex >= haltNode || direction === "UPSTREAM");
+      if (isFailureNode) {
+        state = "ERROR";
+      } else if (pos.index === activeNodeIndex) {
+        state = isTransiting ? "TRANSIT" : "ACTIVE";
+      } else if (isTransiting && transitionTarget !== null && pos.index === transitionTarget) {
+        state = "TRANSIT";
       } else if (direction === "DOWNSTREAM" && pos.index < activeNodeIndex || direction === "UPSTREAM" && pos.index > activeNodeIndex && pos.index <= haltNode) {
         state = "PASSED";
       }
-      const nodeClass = state === "ACTIVE" ? "iso-node active" : state === "PASSED" ? "iso-node passed" : "iso-node idle";
+      const nodeClass = state === "ERROR" ? "iso-node error" : state === "ACTIVE" ? "iso-node active" : state === "TRANSIT" ? "iso-node in-transit" : state === "PASSED" ? "iso-node passed" : "iso-node idle";
       const icon = NODE_ICONS[pos.id] || "";
       return `
       <g class="${nodeClass}" id="iso-node-${pos.index}" onclick="inspectNode(${pos.index})" cursor="pointer" role="button" tabindex="0" aria-label="Inspect ${pos.name}">
         <!-- Invisible Touch Target (>= 48x48px for mobile tap compliance) -->
-        <rect x="${pos.x - 24}" y="${pos.y - 10}" width="48" height="48" fill="transparent" class="iso-node-hitbox" />
-        <!-- Isometric Ambient Halo -->
+        <rect x="${pos.x - 24}" y="${pos.y - 12}" width="48" height="48" fill="transparent" class="iso-node-hitbox" />
+        <!-- Isometric Ambient Halo (Pulsing Red on Failure) -->
         <ellipse cx="${pos.x}" cy="${pos.y + 8}" rx="24" ry="12" class="iso-node-halo" />
         <!-- Technical Node Icon Container -->
         <g transform="translate(${pos.x - 16}, ${pos.y - 12})">
@@ -1698,7 +1941,7 @@ var RequestFlowEngine = (() => {
     }).join("\n");
     return `
     <div class="isometric-canvas-wrapper" id="isometricCanvas">
-      <svg viewBox="0 0 400 210" class="iso-network-svg" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 400 215" class="iso-network-svg" preserveAspectRatio="xMidYMid meet">
         <defs>
           <pattern id="isoGrid" width="40" height="20" patternUnits="userSpaceOnUse">
             <path d="M 0 10 L 20 0 L 40 10 L 20 20 Z" fill="none" class="iso-grid-line" stroke-width="0.5" />
@@ -2016,9 +2259,13 @@ var RequestFlowEngine = (() => {
         updateStorageFooter();
       }
 
-      // 2. Initialize Headless FSM Engine
+      // 2. Initialize Headless FSM Engine (2.0s stay duration, 1.0s transit duration)
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PipelineEngine) {
-        engine = new RequestFlowEngine.PipelineEngine({ scenarioId: "201-created", hopDelayMs: 650 });
+        engine = new RequestFlowEngine.PipelineEngine({
+          scenarioId: "201-created",
+          stayDurationMs: 2000,
+          transitionDurationMs: 1000
+        });
         engine.on("stateChange", updateView);
         engine.on("complete", onPipelineComplete);
         updateView(engine.getState());
@@ -2031,17 +2278,32 @@ var RequestFlowEngine = (() => {
       if (!engine) return;
       const scenario = engine.getScenario();
       const stage = scenario.stages[state.currentNode];
+      const isErrorScenario = scenario.resultStatus === "HALTED_ERROR";
 
       // Update Dynamic Subway track with Technical Blueprint Icons
       const trackNodes = document.getElementById("subwayTrackNodes");
       if (trackNodes && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderSubwayTrack) {
-        trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(state.currentNode, state.direction, scenario.haltNode);
+        trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(
+          state.currentNode,
+          state.direction,
+          scenario.haltNode,
+          state.isTransiting,
+          state.transitionTarget,
+          isErrorScenario
+        );
       }
 
-      // Update Isometric Network Diagram (protocol-explorer style)
+      // Update Isometric Network Diagram with project's 5 nodes
       const isoView = document.getElementById("isometricNetworkView");
       if (isoView && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderIsometricNetworkMap) {
-        isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(state.currentNode, state.direction, scenario.haltNode);
+        isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(
+          state.currentNode,
+          state.direction,
+          scenario.haltNode,
+          state.isTransiting,
+          state.transitionTarget,
+          isErrorScenario
+        );
       }
 
       // Update Play/Pause button text
@@ -2053,7 +2315,10 @@ var RequestFlowEngine = (() => {
       // Update Header Status Badge
       const statusBadge = document.getElementById("engineStatusBadge");
       if (statusBadge) {
-        if (state.status === "HALTED_SUCCESS") {
+        if (state.isTransiting) {
+          statusBadge.innerText = "TRAN";
+          statusBadge.style.color = "var(--border-active)";
+        } else if (state.status === "HALTED_SUCCESS") {
           statusBadge.innerText = "201_OK";
           statusBadge.style.color = "var(--accent-success)";
         } else if (state.status === "HALTED_ERROR") {
@@ -2075,15 +2340,33 @@ var RequestFlowEngine = (() => {
       const tHalt = document.getElementById("telemetryHalt");
       const tDesc = document.getElementById("telemetryDesc");
 
-      if (tState) tState.innerText = state.status;
       if (tDir) tDir.innerText = state.direction;
       if (tHalt) tHalt.innerText = "NODE 0" + (scenario.haltNode + 1);
 
-      if (tTitle && stage) {
-        tTitle.innerText = stage.title.toUpperCase();
-      }
-      if (tDesc && stage) {
-        tDesc.innerText = stage.description;
+      if (state.isTransiting) {
+        if (tState) tState.innerText = "TRANSIT";
+        const targetNode = state.transitionTarget !== null ? state.transitionTarget : state.currentNode;
+        const targetConfig = (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PIPELINE_NODES)
+          ? RequestFlowEngine.PIPELINE_NODES[targetNode]
+          : null;
+        const targetName = targetConfig ? targetConfig.name : "NODE 0" + (targetNode + 1);
+
+        if (tTitle) {
+          tTitle.innerText = state.direction === "DOWNSTREAM"
+            ? `PROPAGATING: [0${state.currentNode + 1}] ──▶ [0${targetNode + 1}]`
+            : `RETURNING: [0${state.currentNode + 1}] ◀── [0${targetNode + 1}]`;
+        }
+        if (tDesc) {
+          tDesc.innerText = `Transmitting packet payload across network link to ${targetName}...`;
+        }
+      } else {
+        if (tState) tState.innerText = state.status;
+        if (tTitle && stage) {
+          tTitle.innerText = stage.title.toUpperCase();
+        }
+        if (tDesc && stage) {
+          tDesc.innerText = stage.description;
+        }
       }
     }
 
@@ -2235,9 +2518,31 @@ var RequestFlowEngine = (() => {
 
     function copyWireData() {
       const wireText = document.getElementById("inspectorWireText");
+      const btn = document.getElementById("btnCopyWire");
       if (wireText && navigator.clipboard) {
         navigator.clipboard.writeText(wireText.innerText)
-          .then(() => alertToast("COPIED TO CLIPBOARD"))
+          .then(() => {
+            if (btn) {
+              btn.classList.add("copied");
+              btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="copy-label">COPIED</span>
+              `;
+              setTimeout(() => {
+                btn.classList.remove("copied");
+                btn.innerHTML = `
+                  <svg class="copy-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 8H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"></path>
+                    <rect x="8" y="2" width="13" height="14" rx="2" ry="2"></rect>
+                  </svg>
+                  <span class="copy-label" id="copyLabelText"></span>
+                `;
+              }, 1500);
+            }
+            alertToast("COPIED TO CLIPBOARD");
+          })
           .catch(() => {});
       }
     }

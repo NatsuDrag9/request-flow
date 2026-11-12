@@ -297,7 +297,7 @@
       align-items: center;
       justify-content: center;
       touch-action: manipulation;
-      transition: all 0.15s ease;
+      transition: all 0.25s ease;
     }
 
     .view-mode-pill:active {
@@ -339,7 +339,7 @@
     }
 
     .iso-wire {
-      transition: stroke 0.2s ease, stroke-dashoffset 0.3s ease;
+      transition: stroke 0.35s ease, stroke-dashoffset 0.4s ease;
     }
 
     .iso-wire.iso-wire-idle {
@@ -355,6 +355,14 @@
       animation: isoWirePulse 1.2s linear infinite;
     }
 
+    .iso-wire.iso-wire-in-transit {
+      stroke: var(--border-active);
+      stroke-width: 3;
+      filter: drop-shadow(0 0 6px var(--border-active));
+      opacity: 1;
+      animation: isoWirePulse 0.7s linear infinite;
+    }
+
     @keyframes isoWirePulse {
       from { stroke-dashoffset: 14; }
       to { stroke-dashoffset: 0; }
@@ -362,7 +370,7 @@
 
     .iso-node {
       outline: none;
-      transition: transform 0.15s ease;
+      transition: filter 0.25s ease;
     }
 
     .iso-node:focus-visible, .iso-node:active {
@@ -379,7 +387,7 @@
       fill: var(--bg-inset);
       stroke: var(--border-subtle);
       stroke-width: 1;
-      transition: all 0.2s ease;
+      transition: fill 0.35s ease, stroke 0.35s ease, stroke-width 0.35s ease, filter 0.35s ease;
     }
 
     .iso-node.active .iso-node-halo {
@@ -390,8 +398,48 @@
       filter: drop-shadow(0 0 6px var(--border-active));
     }
 
-    .iso-node.active {
+    .iso-node.in-transit .iso-node-halo {
+      fill: var(--border-active);
+      fill-opacity: 0.35;
+      stroke: var(--border-active);
+      stroke-width: 2;
+      animation: isoTransitPulse 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes isoTransitPulse {
+      from {
+        stroke-width: 2;
+        fill-opacity: 0.25;
+        filter: drop-shadow(0 0 4px var(--border-active));
+      }
+      to {
+        stroke-width: 2.5;
+        fill-opacity: 0.45;
+        filter: drop-shadow(0 0 12px var(--border-active));
+      }
+    }
+
+    .iso-node.active, .iso-node.in-transit {
       color: var(--border-active);
+    }
+
+    .iso-node.error, .iso-node.error text {
+      color: var(--accent-error);
+      fill: var(--accent-error);
+    }
+
+    .iso-node.error .iso-node-halo {
+      fill: var(--accent-error);
+      fill-opacity: 0.3;
+      stroke: var(--accent-error);
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 10px var(--accent-error));
+    }
+
+    .iso-wire.iso-wire-error {
+      stroke: var(--accent-error) !important;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 6px var(--accent-error));
     }
 
     .iso-node.passed .iso-node-halo {
@@ -428,18 +476,20 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      padding: 4px 0;
+      gap: 8px;
+      padding: 6px 0;
     }
 
     .track-rail {
       position: absolute;
-      top: 20px;
-      bottom: 20px;
+      top: 24px;
+      bottom: 24px;
       left: 21px;
       width: 4px;
       background: var(--border-subtle);
+      border-radius: 2px;
       z-index: 1;
+      transition: all 0.35s ease;
     }
 
     #subwayTrackNodes {
@@ -472,7 +522,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: var(--shadow-retro);
-      transition: all 0.15s ease;
+      transition: all 0.35s ease;
       flex-shrink: 0;
     }
 
@@ -480,7 +530,7 @@
       width: 26px;
       height: 26px;
       stroke: currentColor;
-      transition: transform 0.15s ease;
+      transition: transform 0.35s ease;
       display: block;
     }
 
@@ -495,7 +545,7 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: var(--shadow-retro);
-      transition: border-color 0.15s ease, background-color 0.15s ease;
+      transition: border-color 0.35s ease, background-color 0.35s ease, opacity 0.35s ease;
     }
 
     .node-info-col {
@@ -542,6 +592,7 @@
       background: var(--bg-inset);
       color: var(--text-secondary);
       flex-shrink: 0;
+      transition: all 0.35s ease;
     }
 
     /* Active Node State */
@@ -549,11 +600,11 @@
       border-color: var(--border-active);
       background: var(--border-active);
       color: var(--accent-primary-text);
-      box-shadow: 0 0 10px var(--border-active);
+      box-shadow: 0 0 12px var(--border-active);
     }
 
     .node-row.active .node-tech-icon {
-      transform: scale(1.1);
+      stroke: currentColor;
     }
 
     .node-row.active .node-card {
@@ -566,6 +617,34 @@
       color: var(--border-active);
     }
 
+    /* In-Transit Node State (Slow smooth propagation) */
+    .node-row.in-transit .node-station-dot {
+      border-color: var(--border-active);
+      box-shadow: 0 0 12px var(--border-active);
+      animation: stationTransitGlow 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes stationTransitGlow {
+      from {
+        box-shadow: 0 0 8px var(--border-active);
+        filter: brightness(1);
+      }
+      to {
+        box-shadow: 0 0 16px var(--border-active);
+        filter: brightness(1.25);
+      }
+    }
+
+    .node-row.in-transit .node-card {
+      border-color: var(--border-active);
+    }
+
+    .node-row.in-transit .node-badge {
+      border-color: var(--border-active);
+      color: var(--border-active);
+      animation: blink 0.9s infinite;
+    }
+
     /* Passed Node State */
     .node-row.passed .node-station-dot {
       border-color: var(--accent-success);
@@ -574,6 +653,30 @@
 
     .node-row.passed .node-card {
       opacity: 0.85;
+    }
+
+    /* Failed / Error Node State (Failure occurs at node) */
+    .node-row.error .node-station-dot {
+      border-color: var(--accent-error);
+      background: var(--accent-error);
+      color: #ffffff;
+      box-shadow: 0 0 14px var(--accent-error);
+    }
+
+    .node-row.error .node-card {
+      border-color: var(--accent-error);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .node-row.error .node-name {
+      color: var(--accent-error);
+    }
+
+    .node-row.error .node-badge {
+      border-color: var(--accent-error);
+      color: #ffffff;
+      background: var(--accent-error);
+      font-weight: 700;
     }
 
     /* Telemetry Well */
@@ -799,20 +902,84 @@
       gap: 10px;
     }
 
-    .wire-code-box {
+    .wire-code-container {
+      position: relative;
       background: var(--bg-inset);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      padding: 10px;
+      box-shadow: inset 1px 1px 0 #000000;
+      overflow: hidden;
+    }
+
+    .btn-copy-wire {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      z-index: 5;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 4px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: color 0.15s ease, opacity 0.15s ease;
+      box-shadow: none;
+    }
+
+    .btn-copy-wire:active {
+      transform: none;
+      box-shadow: none;
+      color: var(--border-active);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn-copy-wire:hover {
+        border-color: transparent;
+        color: var(--border-active);
+        background: transparent;
+      }
+    }
+
+    .btn-copy-wire.copied {
+      border-color: transparent;
+      color: var(--accent-success);
+    }
+
+    .copy-icon-svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+
+    .copy-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .wire-code-box {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 12px 56px 12px 12px;
       font-family: var(--font-mono);
       font-size: 11px;
       line-height: 1.45;
       color: var(--text-primary);
       white-space: pre-wrap;
       word-break: break-all;
-      box-shadow: inset 1px 1px 0 #000000;
+      box-shadow: none;
       max-height: 45dvh;
       overflow-y: auto;
+      margin: 0;
     }
 
     .overview-card {
@@ -909,9 +1076,9 @@
         </button>
       </div>
 
-      <!-- Isometric Network Stage Container -->
+      <!-- Isometric Architectural Network Stage Container -->
       <div id="isometricNetworkView">
-        <!-- Rendered via RequestFlowEngine.renderIsometricNetworkMap -->
+        <!-- Rendered via RequestFlowEngine.renderIsometricNetworkMap with our 5 backend nodes -->
       </div>
 
       <!-- Subway Track with Technical Blueprint Icons -->
@@ -990,10 +1157,17 @@
       </div>
 
       <div id="wirePane" style="display: none; flex-direction: column; gap: 8px;">
-        <pre class="wire-code-box" id="inspectorWireText"></pre>
-        <button class="btn-retro btn-retro-secondary" onclick="copyWireData()" style="min-height: 44px;">
-          [ 📋 COPY TELEMETRY ]
-        </button>
+        <div class="wire-code-container">
+          <button class="btn-copy-wire" id="btnCopyWire" onclick="copyWireData()" aria-label="Copy telemetry data" title="Copy telemetry to clipboard">
+            <!-- Standard Copy Icon: Upper Layer at Top-Right, Rear Layer at Bottom-Left -->
+            <svg class="copy-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 8H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"></path>
+              <rect x="8" y="2" width="13" height="14" rx="2" ry="2"></rect>
+            </svg>
+            <span class="copy-label" id="copyLabelText"></span>
+          </button>
+          <pre class="wire-code-box" id="inspectorWireText"></pre>
+        </div>
       </div>
     </div>
   </div>
@@ -1047,9 +1221,13 @@
         updateStorageFooter();
       }
 
-      // 2. Initialize Headless FSM Engine
+      // 2. Initialize Headless FSM Engine (2.0s stay duration, 1.0s transit duration)
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PipelineEngine) {
-        engine = new RequestFlowEngine.PipelineEngine({ scenarioId: "201-created", hopDelayMs: 650 });
+        engine = new RequestFlowEngine.PipelineEngine({
+          scenarioId: "201-created",
+          stayDurationMs: 2000,
+          transitionDurationMs: 1000
+        });
         engine.on("stateChange", updateView);
         engine.on("complete", onPipelineComplete);
         updateView(engine.getState());
@@ -1062,17 +1240,32 @@
       if (!engine) return;
       const scenario = engine.getScenario();
       const stage = scenario.stages[state.currentNode];
+      const isErrorScenario = scenario.resultStatus === "HALTED_ERROR";
 
       // Update Dynamic Subway track with Technical Blueprint Icons
       const trackNodes = document.getElementById("subwayTrackNodes");
       if (trackNodes && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderSubwayTrack) {
-        trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(state.currentNode, state.direction, scenario.haltNode);
+        trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(
+          state.currentNode,
+          state.direction,
+          scenario.haltNode,
+          state.isTransiting,
+          state.transitionTarget,
+          isErrorScenario
+        );
       }
 
-      // Update Isometric Network Diagram (protocol-explorer style)
+      // Update Isometric Network Diagram with project's 5 nodes
       const isoView = document.getElementById("isometricNetworkView");
       if (isoView && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderIsometricNetworkMap) {
-        isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(state.currentNode, state.direction, scenario.haltNode);
+        isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(
+          state.currentNode,
+          state.direction,
+          scenario.haltNode,
+          state.isTransiting,
+          state.transitionTarget,
+          isErrorScenario
+        );
       }
 
       // Update Play/Pause button text
@@ -1084,7 +1277,10 @@
       // Update Header Status Badge
       const statusBadge = document.getElementById("engineStatusBadge");
       if (statusBadge) {
-        if (state.status === "HALTED_SUCCESS") {
+        if (state.isTransiting) {
+          statusBadge.innerText = "TRAN";
+          statusBadge.style.color = "var(--border-active)";
+        } else if (state.status === "HALTED_SUCCESS") {
           statusBadge.innerText = "201_OK";
           statusBadge.style.color = "var(--accent-success)";
         } else if (state.status === "HALTED_ERROR") {
@@ -1106,15 +1302,33 @@
       const tHalt = document.getElementById("telemetryHalt");
       const tDesc = document.getElementById("telemetryDesc");
 
-      if (tState) tState.innerText = state.status;
       if (tDir) tDir.innerText = state.direction;
       if (tHalt) tHalt.innerText = "NODE 0" + (scenario.haltNode + 1);
 
-      if (tTitle && stage) {
-        tTitle.innerText = stage.title.toUpperCase();
-      }
-      if (tDesc && stage) {
-        tDesc.innerText = stage.description;
+      if (state.isTransiting) {
+        if (tState) tState.innerText = "TRANSIT";
+        const targetNode = state.transitionTarget !== null ? state.transitionTarget : state.currentNode;
+        const targetConfig = (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PIPELINE_NODES)
+          ? RequestFlowEngine.PIPELINE_NODES[targetNode]
+          : null;
+        const targetName = targetConfig ? targetConfig.name : "NODE 0" + (targetNode + 1);
+
+        if (tTitle) {
+          tTitle.innerText = state.direction === "DOWNSTREAM"
+            ? `PROPAGATING: [0${state.currentNode + 1}] ──▶ [0${targetNode + 1}]`
+            : `RETURNING: [0${state.currentNode + 1}] ◀── [0${targetNode + 1}]`;
+        }
+        if (tDesc) {
+          tDesc.innerText = `Transmitting packet payload across network link to ${targetName}...`;
+        }
+      } else {
+        if (tState) tState.innerText = state.status;
+        if (tTitle && stage) {
+          tTitle.innerText = stage.title.toUpperCase();
+        }
+        if (tDesc && stage) {
+          tDesc.innerText = stage.description;
+        }
       }
     }
 
@@ -1266,9 +1480,31 @@
 
     function copyWireData() {
       const wireText = document.getElementById("inspectorWireText");
+      const btn = document.getElementById("btnCopyWire");
       if (wireText && navigator.clipboard) {
         navigator.clipboard.writeText(wireText.innerText)
-          .then(() => alertToast("COPIED TO CLIPBOARD"))
+          .then(() => {
+            if (btn) {
+              btn.classList.add("copied");
+              btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="copy-label">COPIED</span>
+              `;
+              setTimeout(() => {
+                btn.classList.remove("copied");
+                btn.innerHTML = `
+                  <svg class="copy-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 8H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"></path>
+                    <rect x="8" y="2" width="13" height="14" rx="2" ry="2"></rect>
+                  </svg>
+                  <span class="copy-label" id="copyLabelText"></span>
+                `;
+              }, 1500);
+            }
+            alertToast("COPIED TO CLIPBOARD");
+          })
           .catch(() => {});
       }
     }
