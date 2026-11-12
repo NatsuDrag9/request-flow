@@ -3,26 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>RequestFlow — Interactive HTTP Request Lab</title>
+  <title>RequestFlow — Hello World</title>
   <style>
     :root {
-      color-scheme: dark;
+      color-scheme: dark light;
       --bg: #090d16;
-      --bg-surface: #131b2e;
-      --bg-card: #1a253c;
+      --surface: #131b2e;
+      --card: #1a253c;
       --border: #263554;
-      --border-active: #3b82f6;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #34d399;
       --text: #f1f5f9;
       --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --accent-blue: #38bdf8;
-      --accent-green: #34d399;
-      --accent-yellow: #fbbf24;
-      --accent-red: #f87171;
-      --accent-purple: #a78bfa;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-      --radius: 12px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -39,9 +32,6 @@
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
-      .pipeline-progress, .packet-dot, .inspector-sheet, .node-card {
-        transition: none !important;
-      }
     }
 
     * {
@@ -54,380 +44,131 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: var(--font);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      padding-top: var(--safe-top);
-      padding-bottom: calc(var(--safe-bottom) + 90px);
+      justify-content: space-between;
+      padding-top: max(var(--safe-top), 16px);
+      padding-bottom: max(var(--safe-bottom), 16px);
+      padding-left: 20px;
+      padding-right: 20px;
       user-select: none;
     }
 
-    /* Header */
     header {
-      padding: 14px 16px 10px;
-      background: rgba(19, 27, 46, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 40;
-    }
-
-    .header-top {
+      padding: 12px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
-    .brand-icon {
-      width: 28px;
-      height: 28px;
+    .logo {
+      width: 32px;
+      height: 32px;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #0f172a;
       font-weight: 800;
-      font-size: 15px;
+      color: #090d16;
+      font-size: 16px;
     }
 
     h1 {
       font-size: 18px;
       font-weight: 700;
-      letter-spacing: -0.3px;
     }
 
-    .stats-pill {
+    .badge {
       font-size: 11px;
-      font-family: var(--font-mono);
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 20px;
-      color: var(--text-muted);
-    }
-
-    .stats-pill span {
-      color: var(--accent-blue);
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+      font-family: ui-monospace, SFMono-Regular, monospace;
       font-weight: 600;
     }
 
-    /* Scenario Selector Pills */
-    .scenario-bar {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-      scrollbar-width: none;
-    }
-    .scenario-bar::-webkit-scrollbar { display: none; }
-
-    .scenario-btn {
-      flex: 0 0 auto;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .scenario-btn.active {
-      background: rgba(56, 189, 248, 0.15);
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-      font-weight: 600;
-    }
-
-    /* Pipeline Canvas */
-    .pipeline-container {
-      padding: 16px 16px 20px;
+    main {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      position: relative;
-    }
-
-    .pipeline-track {
-      position: absolute;
-      left: 36px;
-      top: 36px;
-      bottom: 40px;
-      width: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      z-index: 1;
-    }
-
-    .pipeline-progress {
-      position: absolute;
-      left: 36px;
-      top: 36px;
-      width: 4px;
-      height: 0%;
-      background: linear-gradient(180deg, var(--accent-blue), var(--accent-green));
-      border-radius: 2px;
-      z-index: 2;
-      transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .packet-dot {
-      position: absolute;
-      left: 32px;
-      top: 36px;
-      width: 12px;
-      height: 12px;
-      background: #ffffff;
-      border: 2px solid var(--accent-blue);
-      border-radius: 50%;
-      z-index: 5;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
-      transform: translateY(-50%);
-      transition: top 0.35s ease, opacity 0.2s ease;
-      opacity: 0;
-    }
-
-    /* Pipeline Node Card */
-    .node-card {
-      position: relative;
-      z-index: 3;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease;
-      min-height: 60px;
-    }
-
-    .node-card:active {
-      transform: scale(0.98);
-    }
-
-    .node-card.active {
-      border-color: var(--accent-blue);
-      background: rgba(30, 41, 59, 0.95);
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
-    }
-
-    .node-card.passed {
-      border-color: rgba(52, 211, 153, 0.4);
-    }
-
-    .node-card.failed {
-      border-color: var(--accent-red);
-      background: rgba(248, 113, 113, 0.08);
-      box-shadow: 0 0 14px rgba(248, 113, 113, 0.25);
-    }
-
-    .node-badge {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      padding: 24px 0;
+    }
+
+    .welcome-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .welcome-card h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .welcome-card p {
       color: var(--text-muted);
-      transition: all 0.2s ease;
-    }
-
-    .node-card.active .node-badge {
-      background: var(--accent-blue);
-      color: #090d16;
-      border-color: var(--accent-blue);
-    }
-
-    .node-card.passed .node-badge {
-      background: rgba(52, 211, 153, 0.15);
-      border-color: var(--accent-green);
-      color: var(--accent-green);
-    }
-
-    .node-card.failed .node-badge {
-      background: var(--accent-red);
-      color: #ffffff;
-      border-color: var(--accent-red);
-    }
-
-    .node-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .node-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 2px;
-    }
-
-    .node-title {
       font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .node-latency {
-      font-size: 11px;
-      font-family: var(--font-mono);
-      color: var(--text-dim);
-    }
-
-    .node-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .inspect-hint {
-      color: var(--text-dim);
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    /* Bottom Inspector Sheet */
-    .inspector-sheet {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--bg-surface);
-      border-top: 2px solid var(--border-active);
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      padding: 16px 18px calc(var(--safe-bottom) + 16px);
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.7);
-      z-index: 60;
-      transform: translateY(105%);
-      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      max-height: 75dvh;
-      overflow-y: auto;
-    }
-
-    .inspector-sheet.open {
-      transform: translateY(0);
-    }
-
-    .sheet-handle {
-      width: 36px;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin: 0 auto 12px;
-    }
-
-    .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .sheet-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .sheet-close {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .sheet-tab-group {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-    }
-
-    .sheet-tab {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 13px;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-
-    .sheet-tab.active {
-      color: var(--accent-blue);
-      font-weight: 600;
-      border-bottom: 2px solid var(--accent-blue);
-    }
-
-    .wire-code {
-      background: #090d16;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #cbd5e1;
-      white-space: pre-wrap;
-      word-break: break-all;
       line-height: 1.5;
-      margin-top: 8px;
+      margin-bottom: 20px;
     }
 
-    /* Fixed Bottom Action Dock */
-    .action-dock {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(19, 27, 46, 0.95);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
-      padding: 10px 16px calc(var(--safe-bottom) + 12px);
-      display: flex;
-      gap: 8px;
-      z-index: 50;
+    .counter-display {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .counter-value {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    .counter-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
     }
 
     .btn {
-      height: 46px;
+      width: 100%;
+      min-height: 48px;
       border-radius: 12px;
+      font-size: 16px;
       font-weight: 600;
-      font-size: 14px;
+      border: none;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s ease;
+      gap: 8px;
       touch-action: manipulation;
+      transition: transform 0.1s ease, background-color 0.15s ease;
     }
 
     .btn:active {
@@ -435,163 +176,66 @@
     }
 
     .btn-primary {
-      flex: 2;
       background: linear-gradient(135deg, #38bdf8, #2563eb);
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+      margin-bottom: 10px;
     }
 
     .btn-secondary {
-      flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .btn-icon {
-      width: 46px;
-      background: var(--bg-card);
+      background: var(--card);
       border: 1px solid var(--border);
       color: var(--text-muted);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 12px 0 4px;
     }
   </style>
 </head>
 <body>
-
-  <!-- Top Header -->
   <header>
-    <div class="header-top">
-      <div class="brand">
-        <div class="brand-icon">⚡</div>
-        <h1>RequestFlow</h1>
-      </div>
-      <div class="stats-pill" id="statsDisplay">
-        Reqs: <span id="reqCount">0</span> | Inspected: <span id="inspectCount">0/5</span>
-      </div>
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <h1>RequestFlow</h1>
     </div>
-    
-    <!-- Scenario Selection -->
-    <div class="scenario-bar">
-      <button class="scenario-btn active" data-scenario="happy" onclick="setScenario('happy')">
-        🟢 201 Created (Order)
-      </button>
-      <button class="scenario-btn" data-scenario="auth_fail" onclick="setScenario('auth_fail')">
-        🟡 401 Unauthorized
-      </button>
-      <button class="scenario-btn" data-scenario="db_timeout" onclick="setScenario('db_timeout')">
-        🔴 504 DB Timeout
-      </button>
-    </div>
+    <div class="badge">CloudCrane v0.1</div>
   </header>
 
-  <!-- Vertical Pipeline Canvas -->
-  <main class="pipeline-container">
-    <div class="pipeline-track"></div>
-    <div class="pipeline-progress" id="pipelineProgress"></div>
-    <div class="packet-dot" id="packetDot"></div>
+  <main>
+    <div class="welcome-card">
+      <h2>Hello, World! 👋</h2>
+      <p>Testing CloudCrane deployment, mobile touch ergonomics, and local persistence.</p>
 
-    <!-- Node 1: Client -->
-    <div class="node-card" id="node-0" onclick="inspectNode(0)">
-      <div class="node-badge">📱</div>
-      <div class="node-info">
-        <div class="node-header">
-          <span class="node-title">1. Client / Browser</span>
-          <span class="node-latency" id="lat-0">0 ms</span>
-        </div>
-        <div class="node-desc">POST /api/v1/orders (Bearer JWT)</div>
+      <div class="counter-display">
+        <div class="counter-value" id="counterValue">0</div>
+        <div class="counter-label">Simulated Pings</div>
       </div>
-      <div class="inspect-hint">Tap ➔</div>
-    </div>
 
-    <!-- Node 2: DNS & TLS -->
-    <div class="node-card" id="node-1" onclick="inspectNode(1)">
-      <div class="node-badge">🌐</div>
-      <div class="node-info">
-        <div class="node-header">
-          <span class="node-title">2. DNS & TLS 1.3</span>
-          <span class="node-latency" id="lat-1">+14 ms</span>
-        </div>
-        <div class="node-desc">IP Resolution & Secure Handshake</div>
-      </div>
-      <div class="inspect-hint">Tap ➔</div>
-    </div>
+      <button class="btn btn-primary" id="btnPing" onclick="handlePing()">
+        ⚡ Ping Architecture
+      </button>
 
-    <!-- Node 3: Load Balancer -->
-    <div class="node-card" id="node-2" onclick="inspectNode(2)">
-      <div class="node-badge">⚖️</div>
-      <div class="node-info">
-        <div class="node-header">
-          <span class="node-title">3. Gateway & Load Balancer</span>
-          <span class="node-latency" id="lat-2">+4 ms</span>
-        </div>
-        <div class="node-desc">Reverse proxy & SSL termination</div>
-      </div>
-      <div class="inspect-hint">Tap ➔</div>
-    </div>
-
-    <!-- Node 4: Backend Server -->
-    <div class="node-card" id="node-3" onclick="inspectNode(3)">
-      <div class="node-badge">⚙️</div>
-      <div class="node-info">
-        <div class="node-header">
-          <span class="node-title">4. Backend Controller</span>
-          <span class="node-latency" id="lat-3">+18 ms</span>
-        </div>
-        <div class="node-desc">Auth validation & business routing</div>
-      </div>
-      <div class="inspect-hint">Tap ➔</div>
-    </div>
-
-    <!-- Node 5: Database -->
-    <div class="node-card" id="node-4" onclick="inspectNode(4)">
-      <div class="node-badge">🗄️</div>
-      <div class="node-info">
-        <div class="node-header">
-          <span class="node-title">5. PostgreSQL Database</span>
-          <span class="node-latency" id="lat-4">+26 ms</span>
-        </div>
-        <div class="node-desc">Transaction commit & row write</div>
-      </div>
-      <div class="inspect-hint">Tap ➔</div>
+      <button class="btn btn-secondary" id="btnReset" onclick="handleReset()">
+        ↺ Reset
+      </button>
     </div>
   </main>
 
-  <!-- Bottom Drawer Inspector Sheet -->
-  <div class="inspector-sheet" id="inspectorSheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-title" id="sheetTitle">Node Details</div>
-      <button class="sheet-close" onclick="closeInspector()">Close</button>
-    </div>
-    <div class="sheet-tab-group">
-      <button class="sheet-tab active" id="tabOverview" onclick="setSheetTab('overview')">Overview</button>
-      <button class="sheet-tab" id="tabWire" onclick="setSheetTab('wire')">Wire Protocol</button>
-    </div>
-    <div id="sheetOverview"></div>
-    <div id="sheetWire" class="wire-code" style="display: none;"></div>
-  </div>
-
-  <!-- Bottom Action Dock -->
-  <footer class="action-dock">
-    <button class="btn btn-primary" id="btnSend" onclick="startFlow()">
-      ▶ Send Request
-    </button>
-    <button class="btn btn-secondary" id="btnStep" onclick="stepFlow()">
-      Step ➔
-    </button>
-    <button class="btn btn-icon" title="Reset" onclick="resetFlow()">
-      ↺
-    </button>
+  <footer>
+    Touch Target: 48px &bull; Safe-Area Aware &bull; Offline Ready
   </footer>
 
   <script>
-    // --- Application State & Persistence ---
     const STORAGE_KEY = "requestflow_state_v1";
-    let state = {
+
+    let appState = {
       version: 1,
-      totalRequests: 0,
-      inspectedStages: [],
-      selectedScenario: "happy"
+      pings: 0,
+      lastPingTime: null
     };
 
     function loadState() {
@@ -599,262 +243,44 @@
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed && parsed.version === 1) {
-            state = parsed;
+          if (parsed && typeof parsed.pings === "number") {
+            appState = parsed;
           }
         }
-      } catch (e) {
-        console.warn("Storage load error", e);
+      } catch (err) {
+        console.warn("Storage load warning", err);
       }
-      updateStatsUI();
-      applyScenarioUI(state.selectedScenario);
+      render();
     }
 
     function saveState() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (e) {
-        console.warn("Storage save error", e);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (err) {
+        console.warn("Storage save warning", err);
       }
-      updateStatsUI();
+      render();
     }
 
-    function updateStatsUI() {
-      document.getElementById("reqCount").innerText = state.totalRequests;
-      document.getElementById("inspectCount").innerText = `${state.inspectedStages.length}/5`;
+    function render() {
+      const el = document.getElementById("counterValue");
+      if (el) {
+        el.innerText = appState.pings;
+      }
     }
 
-    // --- Scenario Definitions & Wire Data ---
-    const scenarios = {
-      happy: {
-        name: "201 Created (Order)",
-        status: 201,
-        failAt: -1,
-        nodes: [
-          {
-            title: "Client / Browser",
-            overview: "User clicked 'Place Order'. The app generates a POST request with JSON payload and authorization token.",
-            wire: "POST /api/v1/orders HTTP/1.1\nHost: api.store.com\nAuthorization: Bearer eyJhbGciOi...\nContent-Type: application/json\n\n{\n  \"itemId\": \"sku_942\",\n  \"qty\": 1,\n  \"total\": 49.99\n}"
-          },
-          {
-            title: "DNS & TLS 1.3 Handshake",
-            overview: "The browser checks local DNS cache, resolves api.store.com to IP 76.76.21.21, and completes TLS 1.3 session encryption in 1 RTT.",
-            wire: "DNS: A api.store.com -> 76.76.21.21 (TTL 300s)\nTLS 1.3: ClientHello -> ServerHello (ECDHE_RSA_AES_128_GCM_SHA256)\nCipher: TLS_AES_128_GCM_SHA256\nAlpn: h2"
-          },
-          {
-            title: "API Gateway / Load Balancer",
-            overview: "Nginx reverse proxy accepts the connection, terminates TLS, checks rate limiting, and proxies the stream to a backend node.",
-            wire: "X-Forwarded-For: 198.51.100.42\nX-Forwarded-Proto: https\nX-Request-ID: req_8fbc291a\nUpstream: backend-worker-03:8080"
-          },
-          {
-            title: "Backend Controller & Service",
-            overview: "Spring/Node.js controller runs AuthMiddleware, validates the JWT signature, unpacks user context, and calls OrderService.",
-            wire: "AuthMiddleware: JWT valid (sub: usr_4491, exp: 1731420000)\nValidator: Item in stock (sku_942)\nOrderService.createTransaction()"
-          },
-          {
-            title: "PostgreSQL Database",
-            overview: "Begins ACID transaction, executes INSERT, updates product inventory, commits, and returns generated order ID.",
-            wire: "BEGIN;\nINSERT INTO orders (id, user_id, amount, status)\nVALUES ('ord_5521', 'usr_4491', 49.99, 'CONFIRMED');\nUPDATE inventory SET qty = qty - 1 WHERE sku = 'sku_942';\nCOMMIT;\nQuery Time: 8.4ms"
-          }
-        ]
-      },
-      auth_fail: {
-        name: "401 Unauthorized",
-        status: 401,
-        failAt: 3, // Fails at Backend node
-        nodes: [
-          {
-            title: "Client / Browser",
-            overview: "App sends an order request with an expired authentication token.",
-            wire: "POST /api/v1/orders HTTP/1.1\nAuthorization: Bearer EXPIRED_TOKEN\nContent-Type: application/json"
-          },
-          {
-            title: "DNS & TLS 1.3",
-            overview: "Network handshake succeeds normally.",
-            wire: "DNS: A api.store.com -> 76.76.21.21\nTLS 1.3 Session established."
-          },
-          {
-            title: "API Gateway",
-            overview: "Gateway passes request upstream to backend.",
-            wire: "X-Request-ID: req_error_401\nUpstream: backend-worker-01:8080"
-          },
-          {
-            title: "Backend Controller (FAILED)",
-            overview: "AuthMiddleware validates JWT signature: Token is expired. Halts execution and returns 401 Unauthorized immediately.",
-            wire: "HTTP/1.1 401 Unauthorized\nWWW-Authenticate: Bearer error=\"invalid_token\"\nContent-Type: application/json\n\n{\n  \"error\": \"Token expired at 10:14:00 GMT\"\n}"
-          },
-          {
-            title: "PostgreSQL Database (Unreached)",
-            overview: "Request was halted before reaching database layer.",
-            wire: "-- Not executed. Request aborted at middleware."
-          }
-        ]
-      },
-      db_timeout: {
-        name: "504 DB Timeout",
-        status: 504,
-        failAt: 4, // Fails at DB node
-        nodes: [
-          {
-            title: "Client / Browser",
-            overview: "Client initiates request and awaits response.",
-            wire: "POST /api/v1/orders HTTP/1.1\nAuthorization: Bearer eyJhbGciOi..."
-          },
-          {
-            title: "DNS & TLS 1.3",
-            overview: "Handshake completed in 14ms.",
-            wire: "TLS 1.3 established."
-          },
-          {
-            title: "API Gateway",
-            overview: "Gateway proxies to backend.",
-            wire: "Upstream: backend-worker-02:8080"
-          },
-          {
-            title: "Backend Controller",
-            overview: "Controller issues SQL write but database pool is starved.",
-            wire: "Query issued to pg_pool: max_connections exceeded."
-          },
-          {
-            title: "PostgreSQL Database (TIMEOUT)",
-            overview: "Database lock contention triggers query timeout (15000ms exceeded). Gateway aborts with 504 Gateway Timeout.",
-            wire: "ERROR: 57014: canceling statement due to statement timeout\nHTTP/1.1 504 Gateway Timeout\nContent-Type: application/json\n\n{\n  \"error\": \"Upstream database failed to respond in time\"\n}"
-          }
-        ]
-      }
-    };
-
-    // --- Interactive Flow Logic ---
-    let currentStep = -1;
-    let isFlowing = false;
-    let flowTimer = null;
-    let activeInspectorNode = 0;
-    let activeSheetTab = "overview";
-
-    function setScenario(scen) {
-      if (isFlowing) resetFlow();
-      state.selectedScenario = scen;
-      applyScenarioUI(scen);
+    function handlePing() {
+      appState.pings += 1;
+      appState.lastPingTime = new Date().toISOString();
       saveState();
     }
 
-    function applyScenarioUI(scen) {
-      document.querySelectorAll(".scenario-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.scenario === scen);
-      });
-      resetFlow();
-    }
-
-    function resetFlow() {
-      clearInterval(flowTimer);
-      isFlowing = false;
-      currentStep = -1;
-      document.getElementById("btnSend").innerText = "▶ Send Request";
-      document.getElementById("pipelineProgress").style.height = "0%";
-      const dot = document.getElementById("packetDot");
-      dot.style.opacity = "0";
-
-      for (let i = 0; i < 5; i++) {
-        const card = document.getElementById(`node-${i}`);
-        card.className = "node-card";
-      }
-    }
-
-    function startFlow() {
-      if (isFlowing) {
-        resetFlow();
-        return;
-      }
-
-      resetFlow();
-      isFlowing = true;
-      document.getElementById("btnSend").innerText = "⏹ Stop";
-      state.totalRequests += 1;
+    function handleReset() {
+      appState.pings = 0;
+      appState.lastPingTime = null;
       saveState();
-
-      flowTimer = setInterval(() => {
-        if (!stepFlow()) {
-          clearInterval(flowTimer);
-          isFlowing = false;
-          document.getElementById("btnSend").innerText = "▶ Send Again";
-        }
-      }, 700);
     }
 
-    function stepFlow() {
-      const scenario = scenarios[state.selectedScenario];
-      currentStep++;
-
-      if (currentStep >= 5) {
-        return false;
-      }
-
-      // Check failure condition
-      const isFailed = (scenario.failAt === currentStep);
-
-      // Update Node Cards
-      for (let i = 0; i < 5; i++) {
-        const card = document.getElementById(`node-${i}`);
-        if (i < currentStep) {
-          card.className = "node-card passed";
-        } else if (i === currentStep) {
-          card.className = `node-card active ${isFailed ? "failed" : ""}`;
-        } else {
-          card.className = "node-card";
-        }
-      }
-
-      // Update Track & Packet Dot
-      const targetCard = document.getElementById(`node-${currentStep}`);
-      const dot = document.getElementById("packetDot");
-      const progress = document.getElementById("pipelineProgress");
-
-      const topPos = targetCard.offsetTop + targetCard.offsetHeight / 2;
-      dot.style.opacity = "1";
-      dot.style.top = `${topPos}px`;
-      progress.style.height = `${topPos - 36}px`;
-
-      if (isFailed) {
-        return false; // Stop early on failure
-      }
-
-      return currentStep < 4;
-    }
-
-    // --- Node Inspection Sheet ---
-    function inspectNode(index) {
-      activeInspectorNode = index;
-      const scenario = scenarios[state.selectedScenario];
-      const nodeData = scenario.nodes[index];
-
-      // Record inspection
-      if (!state.inspectedStages.includes(index)) {
-        state.inspectedStages.push(index);
-        saveState();
-      }
-
-      document.getElementById("sheetTitle").innerText = `${index + 1}. ${nodeData.title}`;
-      document.getElementById("sheetOverview").innerText = nodeData.overview;
-      document.getElementById("sheetWire").innerText = nodeData.wire;
-
-      setSheetTab(activeSheetTab);
-      document.getElementById("inspectorSheet").classList.add("open");
-    }
-
-    function closeInspector() {
-      document.getElementById("inspectorSheet").classList.remove("open");
-    }
-
-    function setSheetTab(tab) {
-      activeSheetTab = tab;
-      document.getElementById("tabOverview").classList.toggle("active", tab === "overview");
-      document.getElementById("tabWire").classList.toggle("active", tab === "wire");
-
-      document.getElementById("sheetOverview").style.display = tab === "overview" ? "block" : "none";
-      document.getElementById("sheetWire").style.display = tab === "wire" ? "block" : "none";
-    }
-
-    // Initialize
     window.addEventListener("DOMContentLoaded", () => {
       loadState();
     });

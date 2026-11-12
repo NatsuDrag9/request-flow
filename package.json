@@ -1,0 +1,16 @@
+{
+  "name": "request-flow",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Interactive HTTP Request Learning Lab",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "node scripts/bundle.js",
+    "lint": "node --check scripts/bundle.js",
+    "validate": "npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}
