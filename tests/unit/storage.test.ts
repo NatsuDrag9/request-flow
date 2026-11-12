@@ -151,4 +151,28 @@ describe("Sequential State Persistence Engine & Multi-Version Chaining (Feature 
     const success = engine.save(createDefaultStateV3());
     expect(success).toBe(false);
   });
+
+  it("should save, retrieve, and reset custom per-scenario configurations", () => {
+    // Initially null for scenario
+    expect(engine.getScenarioConfig("rbac_restriction")).toBeNull();
+
+    // Save custom config
+    engine.saveScenarioConfig("rbac_restriction", {
+      userRole: "viewer",
+      rateLimiter: false,
+      latency: "lag",
+      concurrency: "cas",
+    });
+
+    const retrieved = engine.getScenarioConfig("rbac_restriction");
+    expect(retrieved).not.toBeNull();
+    expect(retrieved?.userRole).toBe("viewer");
+    expect(retrieved?.rateLimiter).toBe(false);
+    expect(retrieved?.latency).toBe("lag");
+    expect(retrieved?.concurrency).toBe("cas");
+
+    // Reset custom config
+    engine.resetScenarioConfig("rbac_restriction");
+    expect(engine.getScenarioConfig("rbac_restriction")).toBeNull();
+  });
 });

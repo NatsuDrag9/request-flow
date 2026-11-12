@@ -8,6 +8,7 @@ These rules govern all agent and human engineering on **RequestFlow** and must b
 
 - **Host & Runtime**: Node.js `v20.19.x`, npm `10.8.x`, ES Modules (`"type": "module"`).
 - **Language**: **TypeScript** (`^5.x` / ES2022) with strict type checking (`tsc --noEmit`).
+- **Feature-Level Type Encapsulation**: Create a separate `types.ts` file within each feature directory (`src/features/*/types.ts`) to encapsulate domain interfaces, state models, and event contracts locally. Never aggregate disparate feature types into a monolithic global file.
 - **Frontend Architecture**: Decoupled Modern Vanilla Web Components (ES2022 TypeScript/HTML5/CSS3 with CSS Custom Properties). Zero heavy framework overhead to ensure instant mobile execution.
 - **Simulated Backend Engine**: Headless, deterministic TypeScript state machine (`src/features/01-pipeline-explorer/engine.ts`) simulating HTTP/1.1, TLS 1.3 handshake, Nginx Gateway, and Express/Spring-style routing.
 - **Database Layer**:

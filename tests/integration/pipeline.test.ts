@@ -16,7 +16,7 @@ class InMemoryStorage implements StorageBackend {
   }
 }
 
-describe("Integration: Pipeline Simulation, Inspector & State Persistence", () => {
+describe("Integration: 6-Node Pipeline Simulation, Wire Inspector & State Persistence", () => {
   let storage: StorageEngine;
   let backend: InMemoryStorage;
 
@@ -25,13 +25,13 @@ describe("Integration: Pipeline Simulation, Inspector & State Persistence", () =
     storage = new StorageEngine(backend);
   });
 
-  it("should run full 201 Created pipeline, inspect all nodes, and persist telemetry", () => {
-    const engine = new PipelineEngine({ scenarioId: "201-created" });
+  it("should run full order_create pipeline across all 6 nodes, inspect stages, and persist telemetry", () => {
+    const engine = new PipelineEngine({ scenarioId: "order_create" });
     const scenario = engine.getScenario();
 
     expect(engine.getState().status).toBe("READY");
 
-    // Traverse all nodes downstream to database (Node 4) and upstream back to client (Node 0)
+    // Traverse all nodes downstream to database (Node 5) and upstream back to client (Node 0)
     const visitedNodes: number[] = [];
     while (!engine.getState().isCompleted) {
       const state = engine.getState();
@@ -56,13 +56,13 @@ describe("Integration: Pipeline Simulation, Inspector & State Persistence", () =
     // Verify storage persistence
     const savedState = storage.load();
     expect(savedState.totalRuns).toBe(1);
-    expect(savedState.scenarioRuns["201-created"]).toBe(1);
-    expect(savedState.inspectedNodeHistory).toEqual([0, 1, 2, 3, 4]);
+    expect(savedState.scenarioRuns["order_create"]).toBe(1);
+    expect(savedState.inspectedNodeHistory).toEqual([0, 1, 2, 3, 4, 5]);
     expect(savedState.lastRunTime).not.toBeNull();
   });
 
-  it("should run 401 Unauthorized scenario, halt at Node 3, and record error run", () => {
-    const engine = new PipelineEngine({ scenarioId: "401-unauthorized" });
+  it("should run auth_token_expired scenario, halt at Node 4 (Backend), and record error run", () => {
+    const engine = new PipelineEngine({ scenarioId: "auth_token_expired" });
     const scenario = engine.getScenario();
 
     while (!engine.getState().isCompleted) {
@@ -73,14 +73,44 @@ describe("Integration: Pipeline Simulation, Inspector & State Persistence", () =
     expect(finalState.status).toBe("HALTED_ERROR");
     expect(finalState.isCompleted).toBe(true);
 
-    // Check inspection at halt node (Node 3: Backend)
-    const inspector = buildInspectorDetails(scenario, 3, "UPSTREAM");
+    // Check inspection at halt node (Node 4: Backend Controller)
+    const inspector = buildInspectorDetails(scenario, 4, "UPSTREAM");
     expect(inspector.formattedWireText).toContain("AUTH_STATUS: REJECTED");
 
     storage.recordRun(scenario.id);
     const savedState = storage.load();
     expect(savedState.totalRuns).toBe(1);
-    expect(savedState.scenarioRuns["401-unauthorized"]).toBe(1);
-    expect(savedState.scenarioRuns["201-created"]).toBe(0);
+    expect(savedState.scenarioRuns["auth_token_expired"]).toBe(1);
+    expect(savedState.scenarioRuns["order_create"]).toBe(0);
+  });
+
+  it("should save and restore custom scenario configuration without losing historical telemetry", () => {
+    // 1. Accumulate some runs
+    storage.recordRun("order_create");
+    storage.recordInspection(0);
+    storage.recordInspection(1);
+
+    // 2. Save custom configuration for rbac_restriction
+    storage.saveScenarioConfig("rbac_restriction", {
+      userRole: "viewer",
+      rateLimiter: true,
+      latency: "lag",
+      concurrency: "cas",
+    });
+
+    // 3. Load state and verify custom config is stored alongside telemetry
+    const state = storage.load();
+    expect(state.totalRuns).toBe(1);
+    expect(state.inspectedNodeHistory).toEqual([0, 1]);
+    expect(state.savedScenarioConfigs["rbac_restriction"]).toEqual({
+      userRole: "viewer",
+      rateLimiter: true,
+      latency: "lag",
+      concurrency: "cas",
+    });
+
+    // 4. Retrieve via helper
+    const config = storage.getScenarioConfig("rbac_restriction");
+    expect(config?.userRole).toBe("viewer");
   });
 });

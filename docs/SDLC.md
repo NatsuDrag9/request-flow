@@ -9,7 +9,8 @@ This document defines the software engineering principles and verification metho
    - Code changes must reflect and update specifications synchronously.
 
 2. **Modular Codebase**:
-   - Business simulation and storage logic reside in `src/core/`, strictly isolated from presentation.
+   - Business simulation and storage logic reside in `src/core/` and feature slices in `src/features/`, strictly isolated from presentation.
+   - **Feature-Level Type Encapsulation**: Create a separate `types.ts` file within each feature directory (`src/features/*/types.ts`) to encapsulate domain interfaces, state models, and event contracts locally. Prevents global type pollution and circular dependencies.
    - UI layer in `src/ui/` only renders state and dispatches touch events.
 
 3. **Automated Testing & TDD**:
@@ -35,7 +36,7 @@ This document defines the software engineering principles and verification metho
 - **`scenarios.test.js`**: Data contracts, request headers, and response status assertions.
 
 ### Integration Tests (`tests/integration/`)
-- **`pipeline.test.js`**: End-to-end request simulation across all 5 nodes with latency recording.
+- **`pipeline.test.js`**: End-to-end request simulation across all 6 nodes with latency recording.
 - **`persistence.test.js`**: Full multi-action session persistence (request dispatch $\to$ storage write $\to$ reload).
 
 ## 3. Mandatory Quality Gates

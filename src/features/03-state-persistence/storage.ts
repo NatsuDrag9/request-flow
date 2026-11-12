@@ -1,13 +1,26 @@
 export interface ScenarioRunCounts {
-  "201-created": number;
-  "401-unauthorized": number;
-  "504-timeout": number;
+  "201-created"?: number;
+  "401-unauthorized"?: number;
+  "403-forbidden"?: number;
+  "429-ratelimit"?: number;
+  "504-timeout"?: number;
+  "slow-query"?: number;
+  "idempotency-replay"?: number;
+  "409-conflict"?: number;
+  [key: string]: number | undefined;
 }
 
 export interface LatencyStats {
   avgDnsMs: number;
   avgTlsMs: number;
   avgDbMs: number;
+}
+
+export interface ScenarioConfigSnapshot {
+  rateLimiter?: boolean;
+  userRole?: "viewer" | "member" | "admin";
+  latency?: "normal" | "lag";
+  concurrency?: "idempotent" | "cas";
 }
 
 export interface AppStateV1 {
@@ -19,7 +32,11 @@ export interface AppStateV1 {
 export interface AppStateV2 {
   version: 2;
   totalRuns: number;
-  scenarioRuns: ScenarioRunCounts;
+  scenarioRuns: {
+    "201-created": number;
+    "401-unauthorized": number;
+    "504-timeout": number;
+  };
   lastRunTime: string | null;
   inspectedNodeHistory: number[];
 }
@@ -32,6 +49,7 @@ export interface AppStateV3 {
   inspectedNodeHistory: number[];
   themePreference: "CRT_DARK" | "PAPER_LIGHT";
   latencyStats: LatencyStats;
+  savedScenarioConfigs: Record<string, ScenarioConfigSnapshot>;
 }
 
 export type AppStateLatest = AppStateV3;
@@ -47,9 +65,22 @@ export function createDefaultStateV3(): AppStateV3 {
     version: 3,
     totalRuns: 0,
     scenarioRuns: {
+      "order_create": 0,
+      "auth_token_expired": 0,
+      "rbac_restriction": 0,
+      "token_bucket_empty": 0,
+      "db_pool_timeout": 0,
+      "query_degraded": 0,
+      "idempotency_cache": 0,
+      "optimistic_lock_cas": 0,
       "201-created": 0,
       "401-unauthorized": 0,
+      "403-forbidden": 0,
+      "429-ratelimit": 0,
       "504-timeout": 0,
+      "slow-query": 0,
+      "idempotency-replay": 0,
+      "409-conflict": 0,
     },
     lastRunTime: null,
     inspectedNodeHistory: [],
@@ -59,6 +90,7 @@ export function createDefaultStateV3(): AppStateV3 {
       avgTlsMs: 38,
       avgDbMs: 8,
     },
+    savedScenarioConfigs: {},
   };
 }
 
@@ -84,16 +116,35 @@ export function migrateV1ToV2(oldState: AppStateV1): AppStateV2 {
 
 /**
  * Atomic Migration Step 2: v2 -> v3
+ * Zero-loss upgrade: Preserves all accumulated runs and inspected nodes,
+ * initializes savedScenarioConfigs dictionary cleanly.
  */
 export function migrateV2ToV3(oldState: AppStateV2): AppStateV3 {
   const totalRuns = typeof oldState.totalRuns === "number" ? oldState.totalRuns : 0;
+  const count201 = Number(oldState.scenarioRuns?.["201-created"] ?? totalRuns);
+  const count401 = Number(oldState.scenarioRuns?.["401-unauthorized"] ?? 0);
+  const count504 = Number(oldState.scenarioRuns?.["504-timeout"] ?? 0);
+
   return {
     version: 3,
     totalRuns,
     scenarioRuns: {
-      "201-created": Number(oldState.scenarioRuns?.["201-created"] ?? totalRuns),
-      "401-unauthorized": Number(oldState.scenarioRuns?.["401-unauthorized"] ?? 0),
-      "504-timeout": Number(oldState.scenarioRuns?.["504-timeout"] ?? 0),
+      "order_create": count201,
+      "auth_token_expired": count401,
+      "rbac_restriction": 0,
+      "token_bucket_empty": 0,
+      "db_pool_timeout": count504,
+      "query_degraded": 0,
+      "idempotency_cache": 0,
+      "optimistic_lock_cas": 0,
+      "201-created": count201,
+      "401-unauthorized": count401,
+      "403-forbidden": 0,
+      "429-ratelimit": 0,
+      "504-timeout": count504,
+      "slow-query": 0,
+      "idempotency-replay": 0,
+      "409-conflict": 0,
     },
     lastRunTime: typeof oldState.lastRunTime === "string" ? oldState.lastRunTime : null,
     inspectedNodeHistory: Array.isArray(oldState.inspectedNodeHistory)
@@ -105,6 +156,7 @@ export function migrateV2ToV3(oldState: AppStateV2): AppStateV3 {
       avgTlsMs: 38,
       avgDbMs: 8,
     },
+    savedScenarioConfigs: {},
   };
 }
 
@@ -140,6 +192,11 @@ export function migrateState(raw: unknown): AppStateV3 {
     }
     state = step(state);
     version = (state.version as number) ?? (version + 1);
+  }
+
+  // Ensure default structure for v3 fields
+  if (!state.savedScenarioConfigs || typeof state.savedScenarioConfigs !== "object") {
+    state.savedScenarioConfigs = {};
   }
 
   return state as unknown as AppStateV3;
@@ -209,10 +266,8 @@ export class StorageEngine {
     state.totalRuns += 1;
     state.lastRunTime = new Date().toISOString();
 
-    if (scenarioId in state.scenarioRuns) {
-      const key = scenarioId as keyof ScenarioRunCounts;
-      state.scenarioRuns[key] += 1;
-    }
+    const currentCount = state.scenarioRuns[scenarioId] ?? 0;
+    state.scenarioRuns[scenarioId] = currentCount + 1;
 
     this.save(state);
     return state;
@@ -222,6 +277,30 @@ export class StorageEngine {
     const state = this.load();
     if (!state.inspectedNodeHistory.includes(nodeIndex)) {
       state.inspectedNodeHistory.push(nodeIndex);
+      this.save(state);
+    }
+    return state;
+  }
+
+  saveScenarioConfig(scenarioId: string, config: ScenarioConfigSnapshot): AppStateV3 {
+    const state = this.load();
+    if (!state.savedScenarioConfigs) {
+      state.savedScenarioConfigs = {};
+    }
+    state.savedScenarioConfigs[scenarioId] = { ...config };
+    this.save(state);
+    return state;
+  }
+
+  getScenarioConfig(scenarioId: string): ScenarioConfigSnapshot | null {
+    const state = this.load();
+    return state.savedScenarioConfigs?.[scenarioId] ?? null;
+  }
+
+  resetScenarioConfig(scenarioId: string): AppStateV3 {
+    const state = this.load();
+    if (state.savedScenarioConfigs && scenarioId in state.savedScenarioConfigs) {
+      delete state.savedScenarioConfigs[scenarioId];
       this.save(state);
     }
     return state;

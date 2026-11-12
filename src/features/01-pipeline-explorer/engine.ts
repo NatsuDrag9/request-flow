@@ -1,30 +1,22 @@
 import { getScenario, getAllScenarios, SCENARIOS, type ScenarioDefinition } from "./scenarios";
+import type {
+  EngineStatus,
+  Direction,
+  EngineState,
+  PipelineEngineOptions,
+  EngineEvent,
+  EventListener,
+} from "./types";
 
 export { getScenario, getAllScenarios, SCENARIOS, type ScenarioDefinition };
-
-export type EngineStatus = "READY" | "IN_FLIGHT" | "STEPPING" | "HALTED_SUCCESS" | "HALTED_ERROR";
-export type Direction = "DOWNSTREAM" | "UPSTREAM";
-
-export interface EngineState {
-  status: EngineStatus;
-  currentNode: number;
-  direction: Direction;
-  scenarioId: string;
-  haltNode: number;
-  isCompleted: boolean;
-  isTransiting: boolean;
-  transitionTarget: number | null;
-}
-
-export interface PipelineEngineOptions {
-  scenarioId?: string;
-  hopDelayMs?: number;
-  stayDurationMs?: number;
-  transitionDurationMs?: number;
-}
-
-export type EngineEvent = "stateChange" | "nodeActivate" | "complete";
-export type EventListener = (...args: unknown[]) => void;
+export type {
+  EngineStatus,
+  Direction,
+  EngineState,
+  PipelineEngineOptions,
+  EngineEvent,
+  EventListener,
+};
 
 export class PipelineEngine {
   private scenario: ScenarioDefinition;

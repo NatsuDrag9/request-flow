@@ -233,18 +233,69 @@
       gap: 12px;
     }
 
-    /* Scenario Selector Pills */
-    .scenario-nav {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+    /* Top Controls Bar: Scenario Dropdown & Lab Controls on the SAME Line */
+    .top-controls-row {
+      display: flex;
+      align-items: center;
       gap: 8px;
+      width: 100%;
     }
 
-    .scenario-pill {
+    .btn-scenario-dropdown {
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 700;
       min-height: 44px;
+      padding: 8px 12px;
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-retro);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+      touch-action: manipulation;
+      gap: 8px;
+      transition: all 0.1s ease;
+    }
+
+    .btn-scenario-dropdown:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    .dropdown-label {
+      color: var(--border-active);
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .dropdown-value {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+    }
+
+    .dropdown-caret {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    /* Lab Controls Section */
+    .btn-lab-toggle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      min-height: 44px;
+      padding: 0 10px;
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
       background: var(--bg-card);
@@ -253,23 +304,298 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      gap: 6px;
       touch-action: manipulation;
+      flex-shrink: 0;
+      white-space: nowrap;
       transition: all 0.1s ease;
     }
 
-    .scenario-pill:active {
+    .btn-lab-toggle:active {
       transform: translate(1px, 1px);
       box-shadow: var(--shadow-retro-pressed);
     }
 
-    .scenario-pill.active {
-      border-color: var(--border-active);
+    .lab-config-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 4px;
+      border-radius: 2px;
+      background: var(--bg-surface);
       color: var(--border-active);
+      border: 1px solid var(--border-subtle);
+      letter-spacing: 0.5px;
+    }
+
+    .lab-panel {
       background: var(--bg-inset);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       box-shadow: inset 1px 1px 0px #000000;
+    }
+
+    .lab-panel-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lab-panel-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .lab-toggle-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .lab-toggle-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      box-shadow: var(--shadow-retro);
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s ease;
+    }
+
+    .lab-toggle-btn.active {
+      background: var(--border-active);
+      color: var(--accent-primary-text);
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    .lab-actions-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      border-top: 1px dashed var(--border-subtle);
+      padding-top: 8px;
+    }
+
+    .btn-save-config {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      min-height: 44px;
+      flex: 1;
+      background: var(--bg-card);
+      border: 2px solid var(--border-active);
+      color: var(--border-active);
+      box-shadow: var(--shadow-retro);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-save-config:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    .btn-reset-config {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      min-height: 44px;
+      flex: 1;
+      background: var(--bg-card);
+      border: 2px solid var(--border-strong);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-retro);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-reset-config:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    /* Retro Modals (Scenario Picker & Scenario Info) */
+    .retro-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .retro-modal-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .retro-modal-dialog {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: max(16px, var(--safe-bottom));
+      max-height: calc(100dvh - 60px);
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-retro-lg);
+      z-index: 101;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(20px);
+      transition: transform 0.2s ease;
+    }
+
+    .retro-modal-dialog.active {
+      display: flex;
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-strong);
+    }
+
+    .modal-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+
+    .modal-close-btn {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      min-width: 44px;
+      min-height: 44px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-body {
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .scenario-category-header {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--border-active);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+
+    .scenario-option-card {
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      padding: 8px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: var(--shadow-retro);
+      text-align: left;
+      touch-action: manipulation;
+      transition: all 0.1s ease;
+    }
+
+    .scenario-option-card:active {
+      transform: translate(1px, 1px);
+      box-shadow: var(--shadow-retro-pressed);
+    }
+
+    .scenario-option-card.active {
+      border-color: var(--border-active);
+      background: var(--bg-inset);
+    }
+
+    .scenario-option-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .scenario-option-name {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .scenario-option-summary {
+      font-size: 9px;
+      color: var(--text-tertiary);
+    }
+
+    .scenario-option-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-inset);
+      border: 1px solid var(--border-strong);
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    .info-callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-left: 3px solid var(--border-active);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--text-secondary);
+    }
+
+    .info-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--border-active);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
 
     /* View Mode Switcher (Network vs Sequence) */
@@ -1040,17 +1366,59 @@
   <main>
     <div class="workstation-chassis">
       
-      <!-- Scenario Selector Pills -->
-      <div class="scenario-nav">
-        <button class="scenario-pill active" id="pill-201" onclick="switchScenario('201-created')">
-          [ 201 CREATED ]
+      <!-- Top Controls Row: Scenario Selector & Lab Controls (Same Line) -->
+      <div class="top-controls-row">
+        <button class="btn-scenario-dropdown" id="btnScenarioDropdown" onclick="toggleScenarioPicker()" aria-haspopup="dialog" aria-expanded="false" title="Select Simulation Scenario">
+          <span class="dropdown-label">SCENARIO:</span>
+          <span class="dropdown-value" id="activeScenarioLabel">Happy Path (Standard Checkout)</span>
+          <span class="dropdown-caret">▾</span>
         </button>
-        <button class="scenario-pill" id="pill-401" onclick="switchScenario('401-unauthorized')">
-          [ 401 UNAUTH ]
+
+        <button class="btn-lab-toggle" id="btnLabToggle" onclick="toggleLabControls()" aria-label="Toggle Lab Controls Drawer" title="Open Lab Controls Drawer">
+          <span>⚙ LAB</span>
+          <span id="labConfigIndicator" class="lab-config-badge">DEFAULT</span>
+          <span id="labToggleCaret">▾</span>
         </button>
-        <button class="scenario-pill" id="pill-504" onclick="switchScenario('504-timeout')">
-          [ 504 TIMEOUT ]
-        </button>
+      </div>
+
+      <div class="lab-panel" id="labPanel" style="display: none;">
+        <div class="lab-panel-row">
+          <span class="lab-panel-label">Token Bucket Rate Limiter</span>
+          <div class="lab-toggle-group">
+            <button class="lab-toggle-btn active" id="btnRateLimitOn" onclick="setLabParam('rateLimiter', true)">ON (Cap: 5)</button>
+            <button class="lab-toggle-btn" id="btnRateLimitOff" onclick="setLabParam('rateLimiter', false)">OFF (Burst 429)</button>
+          </div>
+        </div>
+
+        <div class="lab-panel-row">
+          <span class="lab-panel-label">User Role (RBAC Policy)</span>
+          <div class="lab-toggle-group">
+            <button class="lab-toggle-btn" id="btnRoleViewer" onclick="setLabParam('userRole', 'viewer')">Viewer (403)</button>
+            <button class="lab-toggle-btn active" id="btnRoleMember" onclick="setLabParam('userRole', 'member')">Member</button>
+            <button class="lab-toggle-btn" id="btnRoleAdmin" onclick="setLabParam('userRole', 'admin')">Admin</button>
+          </div>
+        </div>
+
+        <div class="lab-panel-row">
+          <span class="lab-panel-label">DB Query Latency</span>
+          <div class="lab-toggle-group">
+            <button class="lab-toggle-btn active" id="btnLatencyNormal" onclick="setLabParam('latency', 'normal')">Normal (15ms)</button>
+            <button class="lab-toggle-btn" id="btnLatencyLag" onclick="setLabParam('latency', 'lag')">1.5s Lag (504/Slow)</button>
+          </div>
+        </div>
+
+        <div class="lab-panel-row">
+          <span class="lab-panel-label">Concurrency Control</span>
+          <div class="lab-toggle-group">
+            <button class="lab-toggle-btn active" id="btnConcIdempotent" onclick="setLabParam('concurrency', 'idempotent')">Idempotent (UUID)</button>
+            <button class="lab-toggle-btn" id="btnConcCas" onclick="setLabParam('concurrency', 'cas')">CAS Lock (409)</button>
+          </div>
+        </div>
+
+        <div class="lab-actions-row">
+          <button class="btn-save-config" onclick="saveActiveScenarioConfig()">[ 💾 SAVE CONFIG ]</button>
+          <button class="btn-reset-config" onclick="resetActiveScenarioConfig()">[ ↺ RESET CONFIG ]</button>
+        </div>
       </div>
 
       <!-- Display View Mode Switcher: Network (Isometric) vs Sequence (Subway) -->
@@ -1102,7 +1470,7 @@
         </div>
       </div>
 
-      <!-- Mechanical Action Bar -->
+      <!-- Mechanical Action Bar (3x2 Touch Grid) -->
       <div class="controls-grid">
         <button class="btn-retro btn-retro-primary" id="btnPlayPause" onclick="togglePlayPause()">
           [ ▶ PLAY AUTO ]
@@ -1116,8 +1484,11 @@
         <button class="btn-retro btn-retro-secondary" id="btnInspectActive" onclick="inspectCurrentNode()">
           [ 🔍 INSPECT WIRE ]
         </button>
+        <button class="btn-retro btn-retro-secondary" id="btnScenarioInfo" onclick="openScenarioInfo()">
+          [ ℹ SCENARIO INFO ]
+        </button>
         <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()">
-          [ ↺ RESET TO CLIENT ]
+          [ ↺ RESET ]
         </button>
       </div>
 
@@ -1172,8 +1543,45 @@
     </div>
   </div>
 
+  <!-- Semantic Scenario Picker Modal -->
+  <div class="retro-modal-backdrop" id="scenarioPickerBackdrop" onclick="closeScenarioPicker()"></div>
+  <div class="retro-modal-dialog" id="scenarioPickerModal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+    <div class="modal-header">
+      <div class="modal-title" id="pickerTitle">SELECT OPERATIONAL SCENARIO</div>
+      <button class="modal-close-btn" onclick="closeScenarioPicker()" aria-label="Close scenario picker">[ ✕ ]</button>
+    </div>
+    <div class="modal-body" id="scenarioPickerBody">
+      <!-- Populated dynamically via renderScenarioPicker() -->
+    </div>
+  </div>
+
+  <!-- Dedicated Scenario Guidance Info Modal -->
+  <div class="retro-modal-backdrop" id="scenarioInfoBackdrop" onclick="closeScenarioInfo()"></div>
+  <div class="retro-modal-dialog" id="scenarioInfoModal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+    <div class="modal-header">
+      <div class="modal-title" id="infoModalTitle">SCENARIO GUIDANCE</div>
+      <button class="modal-close-btn" onclick="closeScenarioInfo()" aria-label="Close scenario info">[ ✕ ]</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div class="info-section-title">WHAT HAPPENS IN THIS SCENARIO:</div>
+        <div class="info-callout" id="infoWhatHappens"></div>
+      </div>
+
+      <div>
+        <div class="info-section-title">EXPECTED TRAVERSAL & OUTCOME:</div>
+        <div class="info-callout" id="infoExpectedOutcome"></div>
+      </div>
+
+      <div>
+        <div class="info-section-title">OBSERVATION & TELEMETRY TARGETS:</div>
+        <div class="info-callout" id="infoObservationTargets"></div>
+      </div>
+    </div>
+  </div>
+
   <footer>
-    <span id="footerStats">RUNS: 0 &bull; v3 PERSISTED</span>
+    <span id="footerStats">RUNS: 0 &bull; 8 SCENARIOS &bull; v3 PERSISTED</span>
     <button class="btn-reset-storage" onclick="handleResetStorage()">[ ↺ RESET STATS ]</button>
   </footer>
 
@@ -1214,26 +1622,328 @@
     let inspectedNodeIndex = 0;
     let activeInspectorTab = "OVERVIEW";
 
+    // Lab parameter state
+    let currentLabParams = {
+      rateLimiter: true,
+      userRole: "member",
+      latency: "normal",
+      concurrency: "idempotent"
+    };
+
     function initLab() {
-      // 1. Initialize State Persistence Engine with sequential migration chaining
+      // 1. Initialize State Persistence Engine with sequential migration chaining (v1 -> v2 -> v3)
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.StorageEngine) {
         storageEngine = new RequestFlowEngine.StorageEngine(window.localStorage);
         updateStorageFooter();
       }
 
-      // 2. Initialize Headless FSM Engine (2.0s stay duration, 1.0s transit duration)
+      // 2. Initialize Headless 6-Node FSM Engine (2.0s stay duration, 1.0s transit duration)
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PipelineEngine) {
         engine = new RequestFlowEngine.PipelineEngine({
-          scenarioId: "201-created",
+          scenarioId: "order_create",
           stayDurationMs: 2000,
           transitionDurationMs: 1000
         });
         engine.on("stateChange", updateView);
         engine.on("complete", onPipelineComplete);
+
+        // Build dynamic scenario picker options
+        renderScenarioPicker();
+
+        // Restore custom or default parameters for initial scenario
+        syncLabParamsForScenario("order_create");
+
         updateView(engine.getState());
       } else {
         console.warn("RequestFlowEngine not loaded yet.");
       }
+    }
+
+    /* Scenario Selection & Dropdown Picker */
+    function toggleScenarioPicker() {
+      const modal = document.getElementById("scenarioPickerModal");
+      const backdrop = document.getElementById("scenarioPickerBackdrop");
+      if (!modal || !backdrop) return;
+      const isOpen = modal.classList.contains("active");
+      if (isOpen) {
+        closeScenarioPicker();
+      } else {
+        modal.classList.add("active");
+        backdrop.classList.add("active");
+      }
+    }
+
+    function closeScenarioPicker() {
+      const modal = document.getElementById("scenarioPickerModal");
+      const backdrop = document.getElementById("scenarioPickerBackdrop");
+      if (modal) modal.classList.remove("active");
+      if (backdrop) backdrop.classList.remove("active");
+    }
+
+    function renderScenarioPicker() {
+      const container = document.getElementById("scenarioPickerBody");
+      if (!container || typeof RequestFlowEngine === "undefined" || !RequestFlowEngine.getAllScenarios) return;
+
+      const scenarios = RequestFlowEngine.getAllScenarios();
+      const categories = [
+        { key: "auth", label: "Authentication & Authorization" },
+        { key: "perimeter", label: "Perimeter & API Gateway" },
+        { key: "database", label: "Database & Concurrency" }
+      ];
+
+      let html = "";
+      categories.forEach(cat => {
+        const catScenarios = scenarios.filter(s => s.category === cat.key);
+        if (catScenarios.length > 0) {
+          html += `<div class="scenario-category-header">${cat.label}</div>`;
+          catScenarios.forEach(s => {
+            const isActive = engine && engine.getScenario().id === s.id;
+            const activeClass = isActive ? "active" : "";
+            html += `
+              <div class="scenario-option-card ${activeClass}" onclick="selectScenario('${s.id}')">
+                <div class="scenario-option-info">
+                  <span class="scenario-option-name">${s.name}</span>
+                  <span class="scenario-option-summary">${s.summary}</span>
+                </div>
+                <span class="scenario-option-badge">${s.code}</span>
+              </div>
+            `;
+          });
+        }
+      });
+
+      container.innerHTML = html;
+    }
+
+    function selectScenario(scenarioId) {
+      if (!engine) return;
+      engine.setScenario(scenarioId);
+
+      const scenario = engine.getScenario();
+      const label = document.getElementById("activeScenarioLabel");
+      if (label) label.innerText = scenario.name;
+
+      // Synchronize lab parameters (restore custom or baseline defaults)
+      syncLabParamsForScenario(scenario.id);
+
+      closeScenarioPicker();
+      renderScenarioPicker();
+      updateView(engine.getState());
+    }
+
+    /* Scenario Guidance Info Modal */
+    function openScenarioInfo() {
+      if (!engine) return;
+      const scenario = engine.getScenario();
+
+      const title = document.getElementById("infoModalTitle");
+      const whatHappens = document.getElementById("infoWhatHappens");
+      const expectedOutcome = document.getElementById("infoExpectedOutcome");
+      const observationTargets = document.getElementById("infoObservationTargets");
+
+      if (title) title.innerText = `[ℹ] ${scenario.name.toUpperCase()}`;
+      if (whatHappens) whatHappens.innerText = scenario.description;
+
+      if (expectedOutcome) {
+        let outcomeText = "";
+        switch (scenario.id) {
+          case "order_create":
+            outcomeText = "Traverses all 6 nodes (Client -> DNS & TLS -> Load Balancer -> API Gateway -> Backend -> Database) and successfully commits an order transaction. Returns HTTP/1.1 201 Created.";
+            break;
+          case "auth_token_expired":
+            outcomeText = "Traverses Nodes 0..4. Halts strictly at Node 05 (Backend Controller / Auth) when JWT signature verification fails. Node 06 (Database) remains UNREACHED. Returns HTTP/1.1 401 Unauthorized.";
+            break;
+          case "rbac_restriction":
+            outcomeText = "Traverses Nodes 0..4. The client is authenticated, but RBAC guard rejects role 'viewer' for mutating checkout action. Halts before Database with HTTP/1.1 403 Forbidden.";
+            break;
+          case "token_bucket_empty":
+            outcomeText = "Halts at Node 04 (API Gateway) when burst traffic exhausts available bucket tokens (0/5). Backend and Database are protected from compute load. Returns HTTP/1.1 429 Too Many Requests with Retry-After: 1.";
+            break;
+          case "db_pool_timeout":
+            outcomeText = "Reaches Node 06 (Database), but connection pool is exhausted (20/20 active connections). Query hangs on row lock exceeding 5000ms SLA, triggering reverse proxy cutoff with HTTP/1.1 504 Gateway Timeout.";
+            break;
+          case "query_degraded":
+            outcomeText = "Full table scan across 2.4M rows takes 1200ms (vs 15ms normal). Completes with HTTP/1.1 200 OK carrying performance alert header X-Query-Time: 1200ms.";
+            break;
+          case "idempotency_cache":
+            outcomeText = "Client submits duplicate UUID Idempotency-Key. API Gateway intercepts request and immediately returns cached replay response (HTTP/1.1 200 OK) without touching Backend or Database.";
+            break;
+          case "optimistic_lock_cas":
+            outcomeText = "Concurrent transaction modified inventory version from 1 to 2. Stale version query touches 0 rows, triggering Compare-And-Swap conflict with HTTP/1.1 409 Conflict.";
+            break;
+          default:
+            outcomeText = `Halts at Node 0${scenario.haltNode + 1} with status ${scenario.code}.`;
+        }
+        expectedOutcome.innerText = outcomeText;
+      }
+
+      if (observationTargets) {
+        let obsText = "";
+        switch (scenario.id) {
+          case "order_create":
+            obsText = "Observe Bearer JWT in Client wire headers, TLS 1.3 1-RTT handshake on Node 02, round-robin LB target selection on Node 03, and PostgreSQL BEGIN ... COMMIT transaction on Node 06.";
+            break;
+          case "auth_token_expired":
+            obsText = "In Wire Telemetry at Node 05 (Backend), observe AUTH_STATUS: REJECTED (TokenExpiredError) and note that Node 06 shows zero SQL dispatches.";
+            break;
+          case "rbac_restriction":
+            obsText = "In Backend wire telemetry, observe REQ_ROLES: [member, admin] vs granted USER_ROLE: viewer, and response payload { error: 'insufficient_permissions', code: 403 }.";
+            break;
+          case "token_bucket_empty":
+            obsText = "Inspect API Gateway wire data for RATE_LIMIT: 0 req remaining, RETRY_AFTER: 1s, and HTTP/1.1 429 response headers.";
+            break;
+          case "db_pool_timeout":
+            obsText = "Inspect Database wire data for LOCK_STATUS: LOCK_WAIT_TIMEOUT_EXCEEDED, EXEC_TIME: 5021ms (> 5000ms SLA), and HTTP/1.1 504 Gateway Timeout.";
+            break;
+          case "query_degraded":
+            obsText = "Inspect Database wire telemetry for X-Query-Time: 1200ms and execution plan EXPLAIN ANALYZE showing sequential table scan.";
+            break;
+          case "idempotency_cache":
+            obsText = "Inspect API Gateway headers for X-Idempotency-Status: REPLAY and note that Backend and Database stages are marked BYPASSED.";
+            break;
+          case "optimistic_lock_cas":
+            obsText = "Inspect Database wire data for CAS_VERSION: 2, ROWS_AFFECT: 0, and response body optimistic_lock_conflict (409 Conflict).";
+            break;
+          default:
+            obsText = "Inspect wire telemetry at the halting node to observe headers and status codes.";
+        }
+        observationTargets.innerText = obsText;
+      }
+
+      const modal = document.getElementById("scenarioInfoModal");
+      const backdrop = document.getElementById("scenarioInfoBackdrop");
+      if (modal) modal.classList.add("active");
+      if (backdrop) backdrop.classList.add("active");
+    }
+
+    function closeScenarioInfo() {
+      const modal = document.getElementById("scenarioInfoModal");
+      const backdrop = document.getElementById("scenarioInfoBackdrop");
+      if (modal) modal.classList.remove("active");
+      if (backdrop) backdrop.classList.remove("active");
+    }
+
+    /* Lab Controls & Configuration Persistence */
+    function toggleLabControls() {
+      const panel = document.getElementById("labPanel");
+      const caret = document.getElementById("labToggleCaret");
+      if (!panel) return;
+      if (panel.style.display === "none" || panel.style.display === "") {
+        panel.style.display = "flex";
+        if (caret) caret.innerText = "▴";
+      } else {
+        panel.style.display = "none";
+        if (caret) caret.innerText = "▾";
+      }
+    }
+
+    function setLabParam(param, value) {
+      currentLabParams[param] = value;
+      updateLabControlsUI();
+    }
+
+    function updateLabControlsUI() {
+      // Rate limiter
+      const btnRateOn = document.getElementById("btnRateLimitOn");
+      const btnRateOff = document.getElementById("btnRateLimitOff");
+      if (btnRateOn && btnRateOff) {
+        btnRateOn.classList.toggle("active", currentLabParams.rateLimiter === true);
+        btnRateOff.classList.toggle("active", currentLabParams.rateLimiter === false);
+      }
+
+      // User role
+      const btnViewer = document.getElementById("btnRoleViewer");
+      const btnMember = document.getElementById("btnRoleMember");
+      const btnAdmin = document.getElementById("btnRoleAdmin");
+      if (btnViewer && btnMember && btnAdmin) {
+        btnViewer.classList.toggle("active", currentLabParams.userRole === "viewer");
+        btnMember.classList.toggle("active", currentLabParams.userRole === "member");
+        btnAdmin.classList.toggle("active", currentLabParams.userRole === "admin");
+      }
+
+      // Latency
+      const btnLatNorm = document.getElementById("btnLatencyNormal");
+      const btnLatLag = document.getElementById("btnLatencyLag");
+      if (btnLatNorm && btnLatLag) {
+        btnLatNorm.classList.toggle("active", currentLabParams.latency === "normal");
+        btnLatLag.classList.toggle("active", currentLabParams.latency === "lag");
+      }
+
+      // Concurrency
+      const btnConcIdem = document.getElementById("btnConcIdempotent");
+      const btnConcCas = document.getElementById("btnConcCas");
+      if (btnConcIdem && btnConcCas) {
+        btnConcIdem.classList.toggle("active", currentLabParams.concurrency === "idempotent");
+        btnConcCas.classList.toggle("active", currentLabParams.concurrency === "cas");
+      }
+    }
+
+    function syncLabParamsForScenario(scenarioId) {
+      const indicator = document.getElementById("labConfigIndicator");
+      if (storageEngine) {
+        const savedConfig = storageEngine.getScenarioConfig(scenarioId);
+        if (savedConfig) {
+          currentLabParams = {
+            rateLimiter: savedConfig.rateLimiter ?? true,
+            userRole: savedConfig.userRole ?? "member",
+            latency: savedConfig.latency ?? "normal",
+            concurrency: savedConfig.concurrency ?? "idempotent"
+          };
+          if (indicator) {
+            indicator.innerText = "CUSTOM SAVED";
+            indicator.style.color = "var(--border-active)";
+          }
+          updateLabControlsUI();
+          return;
+        }
+      }
+
+      // Scenario default presets
+      switch (scenarioId) {
+        case "rbac_restriction":
+          currentLabParams = { rateLimiter: true, userRole: "viewer", latency: "normal", concurrency: "idempotent" };
+          break;
+        case "token_bucket_empty":
+          currentLabParams = { rateLimiter: false, userRole: "member", latency: "normal", concurrency: "idempotent" };
+          break;
+        case "db_pool_timeout":
+        case "query_degraded":
+          currentLabParams = { rateLimiter: true, userRole: "member", latency: "lag", concurrency: "idempotent" };
+          break;
+        case "optimistic_lock_cas":
+          currentLabParams = { rateLimiter: true, userRole: "member", latency: "normal", concurrency: "cas" };
+          break;
+        default:
+          currentLabParams = { rateLimiter: true, userRole: "member", latency: "normal", concurrency: "idempotent" };
+      }
+
+      if (indicator) {
+        indicator.innerText = "DEFAULT";
+        indicator.style.color = "var(--text-tertiary)";
+      }
+      updateLabControlsUI();
+    }
+
+    function saveActiveScenarioConfig() {
+      if (!engine || !storageEngine) return;
+      const scenarioId = engine.getScenario().id;
+      storageEngine.saveScenarioConfig(scenarioId, currentLabParams);
+
+      const indicator = document.getElementById("labConfigIndicator");
+      if (indicator) {
+        indicator.innerText = "CUSTOM SAVED";
+        indicator.style.color = "var(--border-active)";
+      }
+      alertToast("CONFIG SAVED");
+    }
+
+    function resetActiveScenarioConfig() {
+      if (!engine || !storageEngine) return;
+      const scenarioId = engine.getScenario().id;
+      storageEngine.resetScenarioConfig(scenarioId);
+
+      syncLabParamsForScenario(scenarioId);
+      alertToast("CONFIG RESET");
     }
 
     function updateView(state) {
@@ -1255,7 +1965,7 @@
         );
       }
 
-      // Update Isometric Network Diagram with project's 5 nodes
+      // Update Isometric Network Diagram with 6 nodes
       const isoView = document.getElementById("isometricNetworkView");
       if (isoView && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderIsometricNetworkMap) {
         isoView.innerHTML = RequestFlowEngine.renderIsometricNetworkMap(
@@ -1281,7 +1991,7 @@
           statusBadge.innerText = "TRAN";
           statusBadge.style.color = "var(--border-active)";
         } else if (state.status === "HALTED_SUCCESS") {
-          statusBadge.innerText = "201_OK";
+          statusBadge.innerText = scenario.code + "_OK";
           statusBadge.style.color = "var(--accent-success)";
         } else if (state.status === "HALTED_ERROR") {
           statusBadge.innerText = scenario.code + "_ERR";
@@ -1357,23 +2067,6 @@
       engine.reset();
     }
 
-    function switchScenario(scenarioId) {
-      if (!engine) return;
-      engine.setScenario(scenarioId);
-
-      // Update active pill button
-      ["201", "401", "504"].forEach((id) => {
-        const pill = document.getElementById("pill-" + id);
-        if (pill) {
-          if (scenarioId.startsWith(id)) {
-            pill.classList.add("active");
-          } else {
-            pill.classList.remove("active");
-          }
-        }
-      });
-    }
-
     let currentViewMode = "network";
 
     function switchViewMode(mode) {
@@ -1442,6 +2135,10 @@
       if (inspectorWireText) inspectorWireText.innerText = details.formattedWireText;
 
       showInspector();
+    }
+
+    function handleNodeClick(nodeIndex) {
+      inspectNode(nodeIndex);
     }
 
     function showInspector() {
@@ -1524,7 +2221,7 @@
       const state = storageEngine.load();
       const footer = document.getElementById("footerStats");
       if (footer) {
-        footer.innerText = `RUNS: ${state.totalRuns} (201:${state.scenarioRuns["201-created"]} 401:${state.scenarioRuns["401-unauthorized"]} 504:${state.scenarioRuns["504-timeout"]}) \u2022 v${state.version}`;
+        footer.innerText = `RUNS: ${state.totalRuns} \u2022 8 SCENARIOS \u2022 v${state.version} PERSISTED`;
       }
     }
 
