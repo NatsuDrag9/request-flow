@@ -14,7 +14,69 @@ The request pipeline consists of 6 sequential stages:
 
 ## 3. Scenarios & Wire Contracts
 
-> **Mandatory Field**: Every scenario definition in `src/core/scenarios.js` must implement a user-facing `description` property (string). This description is displayed in the UI when the scenario is selected to explain its real-world mechanism and learning goal.
+> **Mandatory Field & Presentation**: Every scenario definition in `src/core/scenarios.js` must implement a user-facing `description` property (string). 
+> **Selection & Info UX**: Scenarios are selected using descriptive, semantic behavioral names (e.g. `[ Happy Path ]`, `[ Expired Token ]`, `[ RBAC Restriction ]`, `[ Rate Limit ]`, `[ DB Timeout ]`)—**never raw HTTP status codes**. A dedicated `[ ℹ SCENARIO INFO ]` button in the bottom mechanical control bar opens a separate modal explaining what happens in the active scenario, its distributed system mechanics, expected traversal, and observation hints.
+
+### 3.1 Scenario Selection & Description Modal UX
+
+#### 1. Semantic Scenario Dropdown Selector (No HTTP Status Codes)
+The scenario is selected via a prominent retro-styled tactile dropdown button:
+`[ SCENARIO: Happy Path (Standard Checkout) ▾ ]`.
+Tapping opens a categorized picker sheet listing operational scenarios by domain:
+- **Authentication & AuthZ**: `Happy Path`, `Expired Bearer Token`, `RBAC Role Restriction (Viewer)`.
+- **Perimeter & Gateway**: `Token Bucket Rate Limiting (429)`, `Idempotency Replay (UUID Cache Hit)`.
+- **Database & Persistence**: `DB Connection Pool Timeout (504)`, `Slow Query Latency (Degraded)`, `CAS Optimistic Concurrency Conflict (409)`.
+Selecting any item immediately updates the active scenario and synchronizes the underlying Lab Controls parameters.
+
+#### 2. Dedicated Bottom Action: `[ ℹ SCENARIO INFO ]`
+In the bottom controls grid alongside `[ ▶ PLAY ]`, `[ ⏭ STEP FWD ]`, `[ 🔍 INSPECT WIRE ]`, and `[ ↺ RESET ]`:
+- Button label: `[ ℹ SCENARIO INFO ]` (or `[ ℹ WHAT HAPPENS? ]`).
+- Touch target: $\ge 44\times 44\text{px}$.
+- Tap Action: Opens a dedicated retro-tech modal displaying:
+  - **Scenario Title**: E.g., `RBAC Role Restriction (Checkout Denial)`
+  - **What Happens**: Comprehensive explanation of the distributed system behavior.
+  - **Expected Outcome**: Route traversal, exact halting node (e.g. Node 4 Backend Controller), and response status.
+  - **What to Observe**: Specific telemetry indicators in the pipeline and wire inspector.
+  - **Dismissal**: `[ ✕ CLOSE ]` button and backdrop tap dismiss.
+
+### 3.2 Lab Controls & Interactive Configuration UI
+
+The application provides a slide-up "Lab Controls" drawer/toolbar where users can select pre-built scenario presets or manually toggle individual infrastructure parameters:
+
+```
+┌────────────────────────────────────────────────────────┐
+│  RequestFlow Lab Controls                              │
+├────────────────────────────────────────────────────────┤
+│  Scenario Presets:                                     │
+│  [ Happy Path ] [ Rate Limit ] [ RBAC Role ] [ DB Lag ]│
+│                                                        │
+│  Interactive Toggles:                                  │
+│  • Token Bucket Rate Limiter : [ ON  | off ] (Cap: 5)  │
+│  • User Role                 : [ Viewer | Member | Admin ]
+│  • DB Query Latency          : [ Normal | 1.5s Lag ]   │
+│  • Concurrency Control       : [ Idempotent | CAS ]    │
+│                                                        │
+│  Configuration Actions:                                │
+│  [ 💾 SAVE CONFIG ]       [ ↺ RESET TO DEFAULT ]       │
+└────────────────────────────────────────────────────────┘
+```
+
+#### Control State Specifications:
+- **Preset Selector**: Quick-select buttons for standard test scenarios (`Happy Path`, `Rate Limit 429`, `Auth RBAC 403`, `DB Lag 504`).
+- **Token Bucket Rate Limiter**: Toggle `ON` (capacity: 5 tokens, refill: 1 token/sec) or `OFF` (simulates **Scenario C: 429 Too Many Requests**).
+- **User Role**: Toggle between `Viewer` (read-only), `Member` (standard checkout), and `Admin` (full access) (simulates **Scenario B2: 403 Forbidden**).
+- **DB Query Latency**: Switch between `Normal` (15ms simulated query) and `1.5s Lag` (simulates **Scenario D: Latency & 504 Timeout**).
+- **Concurrency Control**: Toggle between `Idempotent` (deduplication via `Idempotency-Key`, **Scenario E1**) and `CAS` (optimistic lock conflict detection, **Scenario E2**).
+
+#### Custom Scenario Configuration Persistence:
+- **Per-Scenario Persistence**: Users can tweak parameters (e.g. rate limiter threshold, user role, latency) for any specific scenario and tap **`[ 💾 SAVE CONFIG ]`**.
+- **Action Semantics**:
+  - `[ 💾 SAVE CONFIG ]`: Saves the active parameter configuration under the scenario's unique ID in local storage (`savedScenarioConfigs[scenarioId]`). Displays a temporary confirmation badge (`CONFIG SAVED`).
+  - `[ ↺ RESET TO DEFAULT ]`: Clears the custom saved configuration for the active scenario, restoring the baseline default parameters.
+- **Auto-Restoration on Selection**: When selecting any scenario from the dropdown, RequestFlow checks `savedScenarioConfigs[scenarioId]`. If a saved configuration exists, it restores those parameters; otherwise, it applies the scenario's default presets.
+- **Assignment Constraint Satisfaction**: Altering the storage schema to persist per-scenario configurations directly fulfills the CloudCrane challenge requirement: *"At least one change should alter the data it saves, without losing what’s already on your phone"*.
+
+---
 
 ### Scenario A: Happy Path (`order_create`)
 - **Description**: *"Standard end-to-end checkout flow. The client sends a valid request with authentication, passes the LB, gateway, and auth middleware, and successfully commits an order transaction to the database."*
@@ -129,24 +191,61 @@ The request pipeline consists of 6 sequential stages:
 
 ## 4. Data Storage Contract (CloudCrane `blueprint.json`)
 - **Key**: `requestflow.state`
-- **v1 Schema**:
+- **v1 Schema (Initial MVP)**:
   ```json
   {
     "version": 1,
-    "totalRequests": 5,
-    "inspectedStages": [0, 1]
+    "pings": 5,
+    "lastPingTime": "2026-11-12T10:00:00.000Z"
   }
   ```
-- **v2 Schema (Backward-Compatible)**:
+- **v2 Schema (Backward-Compatible Multi-Scenario)**:
   ```json
   {
     "version": 2,
-    "totalRequests": 5,
-    "inspectedStages": [0, 1],
-    "labSettings": {
-      "rateLimitEnabled": true,
-      "cacheEnabled": true
+    "totalRuns": 5,
+    "scenarioRuns": {
+      "201-created": 5,
+      "401-unauthorized": 0,
+      "504-timeout": 0
+    },
+    "lastRunTime": "2026-11-12T10:00:00.000Z",
+    "inspectedNodeHistory": [0, 1]
+  }
+  ```
+- **v3 Schema (Per-Scenario Configuration & Analytics)**:
+  ```json
+  {
+    "version": 3,
+    "totalRuns": 15,
+    "scenarioRuns": {
+      "201-created": 8,
+      "401-unauthorized": 2,
+      "403-forbidden": 1,
+      "429-ratelimit": 2,
+      "504-timeout": 1,
+      "slow-query": 1,
+      "idempotency-replay": 0,
+      "409-conflict": 0
+    },
+    "lastRunTime": "2026-11-12T16:00:00.000Z",
+    "inspectedNodeHistory": [0, 1, 2, 3, 4, 5],
+    "savedScenarioConfigs": {
+      "rbac_restriction": {
+        "userRole": "viewer",
+        "rateLimiter": true,
+        "latency": "normal",
+        "concurrency": "idempotent"
+      }
+    },
+    "themePreference": "CRT_DARK",
+    "latencyStats": {
+      "avgDnsMs": 4,
+      "avgTlsMs": 38,
+      "avgDbMs": 8
     }
   }
   ```
-- **Promise**: Upgrading from v1 to v2 must preserve all previously logged counts and inspected stages.
+- **Zero-Loss Data Evolution Guarantee**:
+  - Upgrading from v1 or v2 to v3 strictly adheres to the CloudCrane mandate: *"At least one change should alter the data it saves, without losing what’s already on your phone"*.
+  - When a device with existing v1 or v2 data opens the v3 application, `migrateV1ToV2` and `migrateV2ToV3` seamlessly carry forward `totalRuns`, `lastRunTime`, and `inspectedNodeHistory`, initializing `savedScenarioConfigs: {}` without resetting or losing any prior data.
