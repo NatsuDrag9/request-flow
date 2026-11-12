@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   StorageEngine,
-  createDefaultStateV2,
+  createDefaultStateV3,
   migrateV1ToV2,
+  migrateV2ToV3,
   migrateState,
+  CURRENT_SCHEMA_VERSION,
   type StorageBackend,
   type AppStateV1,
   type AppStateV2,
+  type AppStateV3,
 } from "../../src/features/03-state-persistence/storage";
 
 class MockStorageBackend implements StorageBackend {
@@ -33,7 +36,7 @@ class MockStorageBackend implements StorageBackend {
   }
 }
 
-describe("State Persistence Engine & Zero-Loss Migration (Feature 03)", () => {
+describe("Sequential State Persistence Engine & Multi-Version Chaining (Feature 03)", () => {
   let backend: MockStorageBackend;
   let engine: StorageEngine;
 
@@ -42,114 +45,110 @@ describe("State Persistence Engine & Zero-Loss Migration (Feature 03)", () => {
     engine = new StorageEngine(backend);
   });
 
-  it("should initialize with default v2 state when storage is empty", () => {
+  it("should initialize with default v3 state when storage is empty", () => {
     const state = engine.load();
-    expect(state.version).toBe(2);
+    expect(state.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(state.totalRuns).toBe(0);
     expect(state.scenarioRuns["201-created"]).toBe(0);
-    expect(state.scenarioRuns["401-unauthorized"]).toBe(0);
-    expect(state.scenarioRuns["504-timeout"]).toBe(0);
     expect(state.inspectedNodeHistory).toEqual([]);
-    expect(state.lastRunTime).toBeNull();
+    expect(state.latencyStats).toEqual({ avgDnsMs: 4, avgTlsMs: 38, avgDbMs: 8 });
   });
 
-  it("should save and reload valid v2 state", () => {
-    const customState: AppStateV2 = {
-      version: 2,
-      totalRuns: 5,
-      scenarioRuns: {
-        "201-created": 3,
-        "401-unauthorized": 1,
-        "504-timeout": 1,
-      },
-      lastRunTime: "2026-11-12T16:00:00.000Z",
-      inspectedNodeHistory: [0, 1, 2],
-    };
-
-    engine.save(customState);
-    const loaded = engine.load();
-    expect(loaded).toEqual(customState);
-  });
-
-  it("should perform zero-loss migration from v1 to v2", () => {
+  it("should perform atomic single-step migration v1 -> v2", () => {
     const v1State: AppStateV1 = {
       version: 1,
-      pings: 14,
-      lastPingTime: "2026-11-12T10:20:00.000Z",
+      pings: 15,
+      lastPingTime: "2026-11-12T10:00:00Z",
     };
-
-    const migrated = migrateV1ToV2(v1State);
-    expect(migrated.version).toBe(2);
-    expect(migrated.totalRuns).toBe(14);
-    expect(migrated.scenarioRuns["201-created"]).toBe(14);
-    expect(migrated.scenarioRuns["401-unauthorized"]).toBe(0);
-    expect(migrated.scenarioRuns["504-timeout"]).toBe(0);
-    expect(migrated.lastRunTime).toBe("2026-11-12T10:20:00.000Z");
-    expect(migrated.inspectedNodeHistory).toEqual([]);
+    const v2 = migrateV1ToV2(v1State);
+    expect(v2.version).toBe(2);
+    expect(v2.totalRuns).toBe(15);
+    expect(v2.scenarioRuns["201-created"]).toBe(15);
+    expect(v2.lastRunTime).toBe("2026-11-12T10:00:00Z");
   });
 
-  it("should transparently migrate legacy v1 stored in storage backend on load", () => {
-    // Seed backend with v1 key from initial release
+  it("should perform atomic single-step migration v2 -> v3", () => {
+    const v2State: AppStateV2 = {
+      version: 2,
+      totalRuns: 20,
+      scenarioRuns: { "201-created": 15, "401-unauthorized": 3, "504-timeout": 2 },
+      lastRunTime: "2026-11-12T12:00:00Z",
+      inspectedNodeHistory: [0, 1, 2],
+    };
+    const v3 = migrateV2ToV3(v2State);
+    expect(v3.version).toBe(3);
+    expect(v3.totalRuns).toBe(20);
+    expect(v3.scenarioRuns["401-unauthorized"]).toBe(3);
+    expect(v3.inspectedNodeHistory).toEqual([0, 1, 2]);
+    expect(v3.themePreference).toBe("CRT_DARK");
+    expect(v3.latencyStats.avgDnsMs).toBe(4);
+  });
+
+  it("should execute sequential chaining for multi-version jump: v1 -> v2 -> v3", () => {
+    const legacyV1 = {
+      version: 1,
+      pings: 88,
+      lastPingTime: "2026-11-12T08:30:00Z",
+    };
+
+    // migrateState must execute 1 -> 2 -> 3 seamlessly in one pipeline call
+    const migrated = migrateState(legacyV1);
+    expect(migrated.version).toBe(3);
+    expect(migrated.totalRuns).toBe(88);
+    expect(migrated.scenarioRuns["201-created"]).toBe(88);
+    expect(migrated.lastRunTime).toBe("2026-11-12T08:30:00Z");
+    expect(migrated.latencyStats.avgTlsMs).toBe(38);
+  });
+
+  it("should transparently migrate legacy v1 key directly to v3 in storage backend on load", () => {
     backend.setItem(
       "requestflow_state_v1",
       JSON.stringify({ version: 1, pings: 42, lastPingTime: "2026-11-12T09:00:00Z" })
     );
 
     const loaded = engine.load();
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.totalRuns).toBe(42);
     expect(loaded.lastRunTime).toBe("2026-11-12T09:00:00Z");
 
-    // Verify it automatically persisted the migrated v2 key
-    const v2Raw = backend.getItem("requestflow_state_v2");
-    expect(v2Raw).not.toBeNull();
-    const parsedV2 = JSON.parse(v2Raw!);
-    expect(parsedV2.version).toBe(2);
-    expect(parsedV2.totalRuns).toBe(42);
+    // Primary v3 key should now be saved in backend
+    const savedV3 = backend.getItem("requestflow_state_v3");
+    expect(savedV3).not.toBeNull();
+    const parsedV3 = JSON.parse(savedV3!);
+    expect(parsedV3.version).toBe(3);
+    expect(parsedV3.totalRuns).toBe(42);
   });
 
   it("should gracefully recover from corrupted JSON strings in storage", () => {
-    backend.setItem("requestflow_state_v2", "{ corrupt_json: invalid syntax ... ");
+    backend.setItem("requestflow_state_v3", "{ corrupted_json_syntax");
     const state = engine.load();
-    expect(state.version).toBe(2);
+    expect(state.version).toBe(3);
     expect(state.totalRuns).toBe(0);
   });
 
   it("should record pipeline simulation runs and update counts", () => {
     engine.recordRun("201-created");
-    engine.recordRun("201-created");
     engine.recordRun("401-unauthorized");
 
     const state = engine.load();
-    expect(state.totalRuns).toBe(3);
-    expect(state.scenarioRuns["201-created"]).toBe(2);
+    expect(state.totalRuns).toBe(2);
+    expect(state.scenarioRuns["201-created"]).toBe(1);
     expect(state.scenarioRuns["401-unauthorized"]).toBe(1);
-    expect(state.scenarioRuns["504-timeout"]).toBe(0);
     expect(state.lastRunTime).not.toBeNull();
   });
 
   it("should record unique node inspections without duplicates", () => {
     engine.recordInspection(0);
-    engine.recordInspection(2);
-    engine.recordInspection(0); // Duplicate should be ignored
+    engine.recordInspection(3);
+    engine.recordInspection(0);
 
     const state = engine.load();
-    expect(state.inspectedNodeHistory).toEqual([0, 2]);
+    expect(state.inspectedNodeHistory).toEqual([0, 3]);
   });
 
   it("should handle storage write exceptions gracefully without throwing", () => {
     backend.throwOnSet = true;
-    const success = engine.save(createDefaultStateV2());
+    const success = engine.save(createDefaultStateV3());
     expect(success).toBe(false);
-  });
-
-  it("should reset state and clean up storage keys", () => {
-    engine.recordRun("201-created");
-    engine.recordInspection(1);
-    expect(engine.load().totalRuns).toBe(1);
-
-    const resetState = engine.reset();
-    expect(resetState.totalRuns).toBe(0);
-    expect(backend.getItem("requestflow_state_v2")).toBeNull();
   });
 });

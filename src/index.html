@@ -283,12 +283,20 @@
 
     .track-rail {
       position: absolute;
-      top: 18px;
-      bottom: 18px;
-      left: 17px;
+      top: 20px;
+      bottom: 20px;
+      left: 21px;
       width: 4px;
       background: var(--border-subtle);
       z-index: 1;
+    }
+
+    #subwayTrackNodes {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
     .node-row {
@@ -299,28 +307,35 @@
       gap: 10px;
       cursor: pointer;
       touch-action: manipulation;
+      outline: none;
     }
 
     .node-station-dot {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
       border: 2px solid var(--border-strong);
-      background: var(--bg-surface);
+      background: var(--bg-card);
+      color: var(--border-active);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-tertiary);
       box-shadow: var(--shadow-retro);
       transition: all 0.15s ease;
       flex-shrink: 0;
     }
 
+    .node-tech-icon {
+      width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      transition: transform 0.15s ease;
+      display: block;
+    }
+
     .node-card {
       flex: 1;
-      min-height: 46px;
+      min-height: 48px;
       background: var(--bg-card);
       border: 2px solid var(--border-subtle);
       border-radius: var(--radius-sm);
@@ -336,12 +351,30 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      flex: 1;
+    }
+
+    .node-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-right: 8px;
     }
 
     .node-name {
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.5px;
+    }
+
+    .node-ip {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      color: var(--text-tertiary);
+      background: var(--bg-inset);
+      padding: 1px 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
     }
 
     .node-role {
@@ -366,6 +399,10 @@
       background: var(--border-active);
       color: var(--accent-primary-text);
       box-shadow: 0 0 10px var(--border-active);
+    }
+
+    .node-row.active .node-tech-icon {
+      transform: scale(1.1);
     }
 
     .node-row.active .node-card {
@@ -531,7 +568,6 @@
       background: var(--border-strong);
       border-radius: 3px;
       margin: 8px auto 6px auto;
-      cursor: pointer;
     }
 
     .sheet-header {
@@ -699,63 +735,11 @@
         </button>
       </div>
 
-      <!-- Subway Track -->
-      <div class="pipeline-track">
+      <!-- Subway Track with Technical Blueprint Icons -->
+      <div class="pipeline-track" id="subwayTrack">
         <div class="track-rail"></div>
-
-        <div class="node-row active" id="node-row-0" onclick="inspectNode(0)">
-          <div class="node-station-dot">01</div>
-          <div class="node-card">
-            <div class="node-info-col">
-              <span class="node-name">CLIENT</span>
-              <span class="node-role">Browser &bull; Payload &amp; JWT</span>
-            </div>
-            <span class="node-badge" id="node-badge-0">REQ</span>
-          </div>
-        </div>
-
-        <div class="node-row" id="node-row-1" onclick="inspectNode(1)">
-          <div class="node-station-dot">02</div>
-          <div class="node-card">
-            <div class="node-info-col">
-              <span class="node-name">NETWORK &amp; TLS</span>
-              <span class="node-role">DNS &bull; TLS 1.3 Handshake</span>
-            </div>
-            <span class="node-badge" id="node-badge-1">IDLE</span>
-          </div>
-        </div>
-
-        <div class="node-row" id="node-row-2" onclick="inspectNode(2)">
-          <div class="node-station-dot">03</div>
-          <div class="node-card">
-            <div class="node-info-col">
-              <span class="node-name">API GATEWAY</span>
-              <span class="node-role">Nginx &bull; Rate Limit &amp; Routing</span>
-            </div>
-            <span class="node-badge" id="node-badge-2">IDLE</span>
-          </div>
-        </div>
-
-        <div class="node-row" id="node-row-3" onclick="inspectNode(3)">
-          <div class="node-station-dot">04</div>
-          <div class="node-card">
-            <div class="node-info-col">
-              <span class="node-name">BACKEND APP</span>
-              <span class="node-role">Express &bull; Auth &amp; Controller</span>
-            </div>
-            <span class="node-badge" id="node-badge-3">IDLE</span>
-          </div>
-        </div>
-
-        <div class="node-row" id="node-row-4" onclick="inspectNode(4)">
-          <div class="node-station-dot">05</div>
-          <div class="node-card">
-            <div class="node-info-col">
-              <span class="node-name">DATABASE</span>
-              <span class="node-role">PostgreSQL 16 &bull; ACID Engine</span>
-            </div>
-            <span class="node-badge" id="node-badge-4">IDLE</span>
-          </div>
+        <div id="subwayTrackNodes">
+          <!-- Dynamically generated via RequestFlowEngine.renderSubwayTrack -->
         </div>
       </div>
 
@@ -797,7 +781,7 @@
   <!-- Stage Wire Inspector Slide-Up Bottom Sheet -->
   <div class="sheet-backdrop" id="sheetBackdrop" onclick="hideInspector()"></div>
   <div class="sheet-drawer" id="sheetDrawer" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <div class="sheet-grab-bar" onclick="hideInspector()"></div>
+    <div class="sheet-grab-bar" aria-hidden="true"></div>
     <div class="sheet-header">
       <div class="sheet-title" id="sheetTitle">[NODE 01: CLIENT]</div>
       <button class="sheet-close-btn" onclick="hideInspector()" aria-label="Close Inspector">
@@ -836,7 +820,7 @@
   </div>
 
   <footer>
-    <span id="footerStats">RUNS: 0 &bull; v2 PERSISTED</span>
+    <span id="footerStats">RUNS: 0 &bull; v3 PERSISTED</span>
     <button class="btn-reset-storage" onclick="handleResetStorage()">[ ↺ RESET STATS ]</button>
   </footer>
 
@@ -878,7 +862,7 @@
     let activeInspectorTab = "OVERVIEW";
 
     function initLab() {
-      // 1. Initialize State Persistence Engine
+      // 1. Initialize State Persistence Engine with sequential migration chaining
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.StorageEngine) {
         storageEngine = new RequestFlowEngine.StorageEngine(window.localStorage);
         updateStorageFooter();
@@ -900,26 +884,10 @@
       const scenario = engine.getScenario();
       const stage = scenario.stages[state.currentNode];
 
-      // Update Subway track rows
-      for (let i = 0; i < 5; i++) {
-        const row = document.getElementById("node-row-" + i);
-        const badge = document.getElementById("node-badge-" + i);
-        if (!row || !badge) continue;
-
-        row.classList.remove("active", "passed");
-
-        if (i === state.currentNode) {
-          row.classList.add("active");
-          badge.innerText = state.direction === "DOWNSTREAM" ? "▼ REQ" : "▲ RES";
-        } else if (
-          (state.direction === "DOWNSTREAM" && i < state.currentNode) ||
-          (state.direction === "UPSTREAM" && i > state.currentNode && i <= scenario.haltNode)
-        ) {
-          row.classList.add("passed");
-          badge.innerText = "PASS";
-        } else {
-          badge.innerText = "IDLE";
-        }
+      // Update Dynamic Subway track with Technical Blueprint Icons
+      const trackNodes = document.getElementById("subwayTrackNodes");
+      if (trackNodes && typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.renderSubwayTrack) {
+        trackNodes.innerHTML = RequestFlowEngine.renderSubwayTrack(state.currentNode, state.direction, scenario.haltNode);
       }
 
       // Update Play/Pause button text
@@ -1110,7 +1078,7 @@
       const state = storageEngine.load();
       const footer = document.getElementById("footerStats");
       if (footer) {
-        footer.innerText = `RUNS: ${state.totalRuns} (201:${state.scenarioRuns["201-created"]} 401:${state.scenarioRuns["401-unauthorized"]} 504:${state.scenarioRuns["504-timeout"]}) \u2022 v2`;
+        footer.innerText = `RUNS: ${state.totalRuns} (201:${state.scenarioRuns["201-created"]} 401:${state.scenarioRuns["401-unauthorized"]} 504:${state.scenarioRuns["504-timeout"]}) \u2022 v${state.version}`;
       }
     }
 

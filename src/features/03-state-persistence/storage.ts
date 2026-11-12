@@ -4,6 +4,12 @@ export interface ScenarioRunCounts {
   "504-timeout": number;
 }
 
+export interface LatencyStats {
+  avgDnsMs: number;
+  avgTlsMs: number;
+  avgDbMs: number;
+}
+
 export interface AppStateV1 {
   version: 1;
   pings: number;
@@ -18,15 +24,27 @@ export interface AppStateV2 {
   inspectedNodeHistory: number[];
 }
 
+export interface AppStateV3 {
+  version: 3;
+  totalRuns: number;
+  scenarioRuns: ScenarioRunCounts;
+  lastRunTime: string | null;
+  inspectedNodeHistory: number[];
+  themePreference: "CRT_DARK" | "PAPER_LIGHT";
+  latencyStats: LatencyStats;
+}
+
+export type AppStateLatest = AppStateV3;
+
 export interface StorageBackend {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
 }
 
-export function createDefaultStateV2(): AppStateV2 {
+export function createDefaultStateV3(): AppStateV3 {
   return {
-    version: 2,
+    version: 3,
     totalRuns: 0,
     scenarioRuns: {
       "201-created": 0,
@@ -35,11 +53,19 @@ export function createDefaultStateV2(): AppStateV2 {
     },
     lastRunTime: null,
     inspectedNodeHistory: [],
+    themePreference: "CRT_DARK",
+    latencyStats: {
+      avgDnsMs: 4,
+      avgTlsMs: 38,
+      avgDbMs: 8,
+    },
   };
 }
 
+export const createDefaultStateV2 = createDefaultStateV3;
+
 /**
- * Pure migration handler converting v1 state to v2 without data loss.
+ * Atomic Migration Step 1: v1 -> v2
  */
 export function migrateV1ToV2(oldState: AppStateV1): AppStateV2 {
   const pings = typeof oldState.pings === "number" && !isNaN(oldState.pings) ? oldState.pings : 0;
@@ -57,82 +83,105 @@ export function migrateV1ToV2(oldState: AppStateV1): AppStateV2 {
 }
 
 /**
- * Version-specific, pure migration pipeline.
+ * Atomic Migration Step 2: v2 -> v3
  */
-export function migrateState(raw: unknown): AppStateV2 {
+export function migrateV2ToV3(oldState: AppStateV2): AppStateV3 {
+  const totalRuns = typeof oldState.totalRuns === "number" ? oldState.totalRuns : 0;
+  return {
+    version: 3,
+    totalRuns,
+    scenarioRuns: {
+      "201-created": Number(oldState.scenarioRuns?.["201-created"] ?? totalRuns),
+      "401-unauthorized": Number(oldState.scenarioRuns?.["401-unauthorized"] ?? 0),
+      "504-timeout": Number(oldState.scenarioRuns?.["504-timeout"] ?? 0),
+    },
+    lastRunTime: typeof oldState.lastRunTime === "string" ? oldState.lastRunTime : null,
+    inspectedNodeHistory: Array.isArray(oldState.inspectedNodeHistory)
+      ? oldState.inspectedNodeHistory.filter((n) => typeof n === "number")
+      : [],
+    themePreference: "CRT_DARK",
+    latencyStats: {
+      avgDnsMs: 4,
+      avgTlsMs: 38,
+      avgDbMs: 8,
+    },
+  };
+}
+
+export type MigrationStep = (prev: Record<string, unknown>) => Record<string, unknown>;
+
+/**
+ * Sequential Migration Registry: Maps each version `i` to its atomic handler `vi -> vi+1`
+ */
+export const MIGRATION_PIPELINE: Record<number, MigrationStep> = {
+  1: (s) => migrateV1ToV2(s as unknown as AppStateV1) as unknown as Record<string, unknown>,
+  2: (s) => migrateV2ToV3(s as unknown as AppStateV2) as unknown as Record<string, unknown>,
+};
+
+export const CURRENT_SCHEMA_VERSION = 3;
+
+/**
+ * Linear Sequential Chaining: Handles vn -> vn+k seamlessly without data loss.
+ */
+export function migrateState(raw: unknown): AppStateV3 {
   if (!raw || typeof raw !== "object") {
-    return createDefaultStateV2();
+    return createDefaultStateV3();
   }
 
-  const candidate = raw as Record<string, unknown>;
+  let state = { ...(raw as Record<string, unknown>) };
+  let version = typeof state.version === "number" ? state.version : 1;
 
-  // Check version field
-  const version = candidate.version;
-
-  if (!version || version === 1) {
-    const v1State: AppStateV1 = {
-      version: 1,
-      pings: typeof candidate.pings === "number" ? candidate.pings : 0,
-      lastPingTime: typeof candidate.lastPingTime === "string" ? candidate.lastPingTime : null,
-    };
-    return migrateV1ToV2(v1State);
+  // Sequentially execute atomic step handlers: vi -> vi+1
+  while (version < CURRENT_SCHEMA_VERSION) {
+    const step = MIGRATION_PIPELINE[version];
+    if (!step) {
+      console.warn(`No migration registered for schema version ${version} -> ${version + 1}`);
+      break;
+    }
+    state = step(state);
+    version = (state.version as number) ?? (version + 1);
   }
 
-  if (version === 2) {
-    const rawRuns = (candidate.scenarioRuns && typeof candidate.scenarioRuns === "object")
-      ? (candidate.scenarioRuns as Record<string, unknown>)
-      : {};
-
-    const history = Array.isArray(candidate.inspectedNodeHistory)
-      ? candidate.inspectedNodeHistory.filter((n): n is number => typeof n === "number")
-      : [];
-
-    return {
-      version: 2,
-      totalRuns: typeof candidate.totalRuns === "number" ? candidate.totalRuns : 0,
-      scenarioRuns: {
-        "201-created": Number(rawRuns["201-created"] ?? 0),
-        "401-unauthorized": Number(rawRuns["401-unauthorized"] ?? 0),
-        "504-timeout": Number(rawRuns["504-timeout"] ?? 0),
-      },
-      lastRunTime: typeof candidate.lastRunTime === "string" ? candidate.lastRunTime : null,
-      inspectedNodeHistory: history,
-    };
-  }
-
-  // Unknown future versions fall back safely to default
-  return createDefaultStateV2();
+  return state as unknown as AppStateV3;
 }
 
 /**
- * Headless StorageEngine wrapping any StorageBackend.
+ * Headless StorageEngine wrapping any StorageBackend with sequential migration chaining.
  */
 export class StorageEngine {
   private backend: StorageBackend;
   private storageKey: string;
-  private cachedState: AppStateV2 | null = null;
+  private cachedState: AppStateV3 | null = null;
 
-  constructor(backend: StorageBackend, storageKey = "requestflow_state_v2") {
+  constructor(backend: StorageBackend, storageKey = "requestflow_state_v3") {
     this.backend = backend;
     this.storageKey = storageKey;
   }
 
-  load(): AppStateV2 {
+  load(): AppStateV3 {
     try {
-      // First check for primary v2 key
-      const saved = this.backend.getItem(this.storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      // 1. Try primary v3 key
+      const savedV3 = this.backend.getItem(this.storageKey);
+      if (savedV3) {
+        const parsed = JSON.parse(savedV3);
         this.cachedState = migrateState(parsed);
         return { ...this.cachedState };
       }
 
-      // Check for legacy v1 key ("requestflow_state_v1") to perform zero-loss migration
+      // 2. Try v2 key (requestflow_state_v2)
+      const savedV2 = this.backend.getItem("requestflow_state_v2");
+      if (savedV2) {
+        const parsedV2 = JSON.parse(savedV2);
+        this.cachedState = migrateState(parsedV2);
+        this.save(this.cachedState);
+        return { ...this.cachedState };
+      }
+
+      // 3. Try legacy v1 key (requestflow_state_v1)
       const legacyV1 = this.backend.getItem("requestflow_state_v1");
       if (legacyV1) {
         const parsedV1 = JSON.parse(legacyV1);
         this.cachedState = migrateState(parsedV1);
-        // Persist migrated state to new key
         this.save(this.cachedState);
         return { ...this.cachedState };
       }
@@ -140,11 +189,11 @@ export class StorageEngine {
       console.warn("StorageEngine load failed, using default state", err);
     }
 
-    this.cachedState = createDefaultStateV2();
+    this.cachedState = createDefaultStateV3();
     return { ...this.cachedState };
   }
 
-  save(state: AppStateV2): boolean {
+  save(state: AppStateV3): boolean {
     this.cachedState = { ...state };
     try {
       this.backend.setItem(this.storageKey, JSON.stringify(state));
@@ -155,7 +204,7 @@ export class StorageEngine {
     }
   }
 
-  recordRun(scenarioId: string): AppStateV2 {
+  recordRun(scenarioId: string): AppStateV3 {
     const state = this.load();
     state.totalRuns += 1;
     state.lastRunTime = new Date().toISOString();
@@ -169,7 +218,7 @@ export class StorageEngine {
     return state;
   }
 
-  recordInspection(nodeIndex: number): AppStateV2 {
+  recordInspection(nodeIndex: number): AppStateV3 {
     const state = this.load();
     if (!state.inspectedNodeHistory.includes(nodeIndex)) {
       state.inspectedNodeHistory.push(nodeIndex);
@@ -178,11 +227,12 @@ export class StorageEngine {
     return state;
   }
 
-  reset(): AppStateV2 {
-    const fresh = createDefaultStateV2();
+  reset(): AppStateV3 {
+    const fresh = createDefaultStateV3();
     this.save(fresh);
     try {
       this.backend.removeItem(this.storageKey);
+      this.backend.removeItem("requestflow_state_v2");
       this.backend.removeItem("requestflow_state_v1");
     } catch {
       // ignore
