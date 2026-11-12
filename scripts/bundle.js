@@ -28,7 +28,7 @@ if (fs.existsSync(enginePath)) {
     bundle: true,
     format: "iife",
     globalName: "RequestFlowEngine",
-    minify: false,
+    minify: true,
     write: false,
   });
   engineJs = engineBuild.outputFiles[0].text;
@@ -36,14 +36,34 @@ if (fs.existsSync(enginePath)) {
 
 let htmlContent = fs.readFileSync(srcHtmlPath, "utf-8");
 
-// Inject compiled engine into HTML before user script
+// Strip HTML comments (preserving conditional IE comments if any)
+htmlContent = htmlContent.replace(/<!--(?!\[)[\s\S]*?-->/g, "");
+
+// Minify CSS inside <style>
+htmlContent = htmlContent.replace(/<style>([\s\S]*?)<\/style>/g, (_, css) => {
+  const minCss = esbuild.transformSync(css, { loader: "css", minify: true }).code;
+  return `<style>${minCss}</style>`;
+});
+
+// Inject compiled engine into HTML before user script and safely minify JS
 if (engineJs) {
   if (htmlContent.includes("/* <!-- ENGINE_BUNDLE --> */")) {
     htmlContent = htmlContent.replace("/* <!-- ENGINE_BUNDLE --> */", engineJs);
   } else {
-    htmlContent = htmlContent.replace("<script>", `<script>\n/* Compiled RequestFlowEngine */\n${engineJs}\n`);
+    htmlContent = htmlContent.replace("<script>", `<script>\n${engineJs}\n`);
   }
 }
+
+// Safely minify inline <script> blocks (preserves function names & top-level bindings)
+htmlContent = htmlContent.replace(/<script>([\s\S]*?)<\/script>/g, (_, js) => {
+  const minJs = esbuild.transformSync(js, {
+    loader: "js",
+    minifyWhitespace: true,
+    minifySyntax: true,
+    minifyIdentifiers: false,
+  }).code;
+  return `<script>${minJs}</script>`;
+});
 
 // Validation checks
 if (htmlContent.length > 1024 * 1024) {
