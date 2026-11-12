@@ -207,11 +207,13 @@ export function renderNodeComponent(
         <div class="node-info-col">
           <div class="node-header-line">
             <span class="node-name">[0${config.index + 1}] ${config.name}</span>
-            <span class="node-ip">${config.ipAddress}</span>
+            <div class="node-meta-group">
+              <span class="node-ip">${config.ipAddress}</span>
+              <span class="node-badge" id="node-badge-${config.index}">${renderState.badgeText}</span>
+            </div>
           </div>
           <span class="node-role">${config.subtext}</span>
         </div>
-        <span class="node-badge" id="node-badge-${config.index}">${renderState.badgeText}</span>
       </div>
     </div>
   `.trim();
