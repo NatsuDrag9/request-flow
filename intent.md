@@ -25,5 +25,9 @@ When a user opens RequestFlow on their phone, the app presents an interactive, v
 3. **Deep Node Inspection**: Tapping any pipeline node slides up a bottom drawer with two views:
    - **Overview**: Clear, accessible explanations of what occurred at that layer.
    - **Wire Protocol**: Exact raw HTTP headers, JSON payloads, and SQL queries.
-4. **Failure Visualization**: On error scenarios, execution halts precisely at the failing node (e.g., AuthMiddleware halts at Stage 4 with `401`), showing status codes and debugging hints.
+4. **Failure Visualization & Lab Controls**: On error scenarios, execution halts precisely at the failing node with clear status codes and debugging hints:
+   - **429 Too Many Requests**: Demonstrates token bucket depletion at the API Gateway when rapid requests exceed capacity.
+   - **401 vs 403 (Authentication vs Authorization)**: Demonstrates the difference between unauthenticated tokens (401 at Gateway/Auth) and role-based authorization failures (403 when a `Viewer` attempts a mutating `POST /checkout` vs an `Admin` or `Member`).
+   - **504 DB Timeout & Slow Queries**: Simulates latency degradation and pool exhaustion at the database layer.
+   - **Concurrency (Idempotency & CAS)**: Simulates duplicate prevention via idempotency keys and race condition detection via optimistic locking.
 5. **Progress Persistence**: Learning progress, inspection history, and total request metrics persist across app restarts using local storage.
