@@ -3,34 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>RequestFlow — Hello World</title>
+  <title>RequestFlow — Retro-Tech Lab</title>
   <style>
     :root {
       color-scheme: dark light;
-      --bg: #090d16;
-      --surface: #131b2e;
-      --card: #1a253c;
-      --border: #263554;
-      --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --success: #34d399;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
+
+      /* --- DEFAULT THEME: CRT_DARK (Cathode Ray Phosphor & Matte Charcoal) --- */
+      --bg-canvas: #101110;
+      --bg-surface: #181a17;
+      --bg-card: #212320;
+      --bg-inset: #0a0b09;
+      --border-strong: #4a4d45;
+      --border-subtle: #2d302a;
+      --border-active: #f59e0b;
+
+      --text-primary: #f5f2ea;
+      --text-secondary: #d4cfc4;
+      --text-tertiary: #b8b2a5;
+
+      --accent-primary: #f59e0b;
+      --accent-primary-text: #101110;
+      --accent-success: #22c55e;
+      --accent-error: #ef4444;
+
+      --shadow-retro: 2px 2px 0px #000000;
+      --shadow-retro-pressed: 0px 0px 0px #000000;
+      --shadow-retro-lg: 3px 3px 0px #000000;
+
+      --font-mono: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+
+      --radius-sm: 3px;
+      --radius-md: 6px;
+
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #090d16;
-        --text: #f1f5f9;
-      }
+    /* --- EXPLICIT THEME: CRT_DARK --- */
+    [data-theme="CRT_DARK"] {
+      --bg-canvas: #101110;
+      --bg-surface: #181a17;
+      --bg-card: #212320;
+      --bg-inset: #0a0b09;
+      --border-strong: #4a4d45;
+      --border-subtle: #2d302a;
+      --border-active: #f59e0b;
+
+      --text-primary: #f5f2ea;
+      --text-secondary: #d4cfc4;
+      --text-tertiary: #b8b2a5;
+
+      --accent-primary: #f59e0b;
+      --accent-primary-text: #101110;
+      --accent-success: #22c55e;
+      --accent-error: #ef4444;
+
+      --shadow-retro: 2px 2px 0px #000000;
+      --shadow-retro-pressed: 0px 0px 0px #000000;
+      --shadow-retro-lg: 3px 3px 0px #000000;
+    }
+
+    /* --- EXPLICIT THEME: PAPER_LIGHT (Vintage Drafting Parchment & Computer Beige) --- */
+    [data-theme="PAPER_LIGHT"] {
+      --bg-canvas: #f6f3eb;
+      --bg-surface: #ede5d4;
+      --bg-card: #fffefb;
+      --bg-inset: #ddd4bf;
+      --border-strong: #211e19;
+      --border-subtle: #b8ac96;
+      --border-active: #9a3412;
+
+      --text-primary: #1c1915;
+      --text-secondary: #38342c;
+      --text-tertiary: #4a453b;
+
+      --accent-primary: #9a3412;
+      --accent-primary-text: #ffffff;
+      --accent-success: #15803d;
+      --accent-error: #b91c1c;
+
+      --shadow-retro: 2px 2px 0px var(--border-strong);
+      --shadow-retro-pressed: 0px 0px 0px var(--border-strong);
+      --shadow-retro-lg: 3px 3px 0px var(--border-strong);
     }
 
     @media (prefers-reduced-motion: reduce) {
       * {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
+      }
+      .btn-retro:active {
+        transform: none !important;
       }
     }
 
@@ -42,201 +106,361 @@
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding-top: max(var(--safe-top), 16px);
-      padding-bottom: max(var(--safe-bottom), 16px);
-      padding-left: 20px;
-      padding-right: 20px;
+      padding-top: max(var(--safe-top), 12px);
+      padding-bottom: max(var(--safe-bottom), 12px);
+      padding-left: 16px;
+      padding-right: 16px;
       user-select: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
     }
 
+    /* Top Hardware Header */
     header {
-      padding: 12px 0;
+      padding: 8px 12px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-retro);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      min-height: 52px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .logo {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .brand-tag {
+      font-size: 11px;
       font-weight: 800;
-      color: #090d16;
-      font-size: 16px;
+      background: var(--border-active);
+      color: var(--accent-primary-text);
+      padding: 3px 6px;
+      border-radius: 2px;
+      letter-spacing: 0.5px;
     }
 
     h1 {
-      font-size: 18px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theme-toggle-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      min-height: 44px;
+      min-width: 110px;
+      padding: 6px 10px;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--border-strong);
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.5px;
+    }
+
+    .theme-toggle-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+    }
+
+    .sys-badge {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--accent-success);
+      background: var(--bg-inset);
+      border: 1px solid var(--border-strong);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 5px;
       font-weight: 700;
     }
 
-    .badge {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: rgba(52, 211, 153, 0.15);
-      border: 1px solid var(--success);
-      color: var(--success);
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-weight: 600;
+    .sys-badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: var(--accent-success);
+      border-radius: 50%;
+      display: inline-block;
     }
 
+    /* Main Console Chassis */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      text-align: center;
-      gap: 16px;
-      padding: 24px 0;
+      padding: 16px 0;
     }
 
-    .welcome-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px 20px;
+    .workstation-chassis {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-retro-lg);
+      padding: 20px 18px;
       width: 100%;
-      max-width: 360px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      max-width: 380px;
     }
 
-    .welcome-card h2 {
-      font-size: 20px;
+    .chassis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 2px dashed var(--border-subtle);
+      padding-bottom: 8px;
+    }
+
+    .chassis-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    .chassis-id {
+      font-size: 12px;
+      color: var(--border-active);
+      font-weight: 800;
+    }
+
+    /* Inset CRT Phosphor Telemetry Well */
+    .telemetry-well {
+      background: var(--bg-inset);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 16px 14px;
+      margin-bottom: 18px;
+      box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
       margin-bottom: 8px;
     }
 
-    .welcome-card p {
-      color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .counter-display {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .counter-value {
-      font-size: 36px;
-      font-weight: 800;
-      color: var(--accent);
-      font-family: ui-monospace, SFMono-Regular, monospace;
-    }
-
-    .counter-label {
+    .telemetry-title {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-top: 4px;
+      font-weight: 700;
     }
 
-    .btn {
-      width: 100%;
-      min-height: 48px;
-      border-radius: 12px;
-      font-size: 16px;
+    .telemetry-counter {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--border-active);
+      line-height: 1;
+      letter-spacing: 2px;
+      margin: 8px 0 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .telemetry-log {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      border-top: 2px dotted var(--border-subtle);
+      padding-top: 8px;
+      line-height: 1.6;
       font-weight: 600;
-      border: none;
+    }
+
+    .telemetry-log span {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    /* Tactile Mechanical Controls */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-retro {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      min-height: 48px;
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-retro);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       touch-action: manipulation;
-      transition: transform 0.1s ease, background-color 0.15s ease;
+      transition: transform 0.05s ease, box-shadow 0.05s ease;
     }
 
-    .btn:active {
-      transform: scale(0.97);
+    .btn-retro:active {
+      transform: translate(2px, 2px);
+      box-shadow: var(--shadow-retro-pressed);
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #38bdf8, #2563eb);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
-      margin-bottom: 10px;
+    .btn-retro-primary {
+      background: var(--border-active);
+      color: var(--accent-primary-text);
+      border-color: var(--border-strong);
     }
 
-    .btn-secondary {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
+    .btn-retro-secondary {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
     }
 
+    /* Industrial Status Footer */
     footer {
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      padding: 12px 0 4px;
+      padding: 10px 12px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-retro);
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
     }
   </style>
 </head>
 <body>
+
   <header>
     <div class="brand">
-      <div class="logo">⚡</div>
+      <span class="brand-tag">CC-88</span>
       <h1>RequestFlow</h1>
     </div>
-    <div class="badge">CloudCrane v0.1</div>
+    <div class="header-actions">
+      <button class="theme-toggle-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Switch between CRT_DARK and PAPER_LIGHT">
+        THEME: CRT_DARK
+      </button>
+      <div class="sys-badge">RDY</div>
+    </div>
   </header>
 
   <main>
-    <div class="welcome-card">
-      <h2>Hello, World! 👋</h2>
-      <p>Testing CloudCrane deployment, mobile touch ergonomics, and local persistence.</p>
-
-      <div class="counter-display">
-        <div class="counter-value" id="counterValue">0</div>
-        <div class="counter-label">Simulated Pings</div>
+    <div class="workstation-chassis">
+      <div class="chassis-header">
+        <span class="chassis-label">BENCH TEST CONSOLE</span>
+        <span class="chassis-id">REV_0.2</span>
       </div>
 
-      <button class="btn btn-primary" id="btnPing" onclick="handlePing()">
-        ⚡ Ping Architecture
-      </button>
+      <div class="telemetry-well">
+        <div class="telemetry-row">
+          <span class="telemetry-title">SIMULATED CYCLES</span>
+          <span class="telemetry-title">RAM: OK</span>
+        </div>
+        <div class="telemetry-counter" id="counterValue">000</div>
+        <div class="telemetry-log">
+          LAST_TX: <span id="lastTx">NONE</span><br/>
+          THEME: <span id="themeDisplay">CRT_DARK</span>
+        </div>
+      </div>
 
-      <button class="btn btn-secondary" id="btnReset" onclick="handleReset()">
-        ↺ Reset
-      </button>
+      <div class="btn-group">
+        <button class="btn-retro btn-retro-primary" id="btnPing" onclick="handlePing()">
+          [ ▶ EXEC PING ]
+        </button>
+
+        <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()">
+          [ ↺ RST COUNTER ]
+        </button>
+      </div>
     </div>
   </main>
 
   <footer>
-    Touch Target: 48px &bull; Safe-Area Aware &bull; Offline Ready
+    <span>CAL: TOUCH_48PX</span>
+    <span>THEMES: CRT_DARK / PAPER_LIGHT</span>
   </footer>
 
   <script>
     const STORAGE_KEY = "requestflow_state_v1";
+    const THEME_KEY = "requestflow_theme_mode";
+
+    const THEME_CRT = "CRT_DARK";
+    const THEME_PAPER = "PAPER_LIGHT";
 
     let appState = {
       version: 1,
       pings: 0,
       lastPingTime: null
     };
+
+    let currentTheme = localStorage.getItem(THEME_KEY);
+    if (currentTheme !== THEME_CRT && currentTheme !== THEME_PAPER) {
+      currentTheme = THEME_CRT;
+    }
+
+    function applyTheme(theme) {
+      currentTheme = (theme === THEME_PAPER) ? THEME_PAPER : THEME_CRT;
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      try {
+        localStorage.setItem(THEME_KEY, currentTheme);
+      } catch (err) {
+        console.warn("Theme storage warning", err);
+      }
+      updateThemeUI();
+    }
+
+    function toggleTheme() {
+      const nextTheme = (currentTheme === THEME_CRT) ? THEME_PAPER : THEME_CRT;
+      applyTheme(nextTheme);
+    }
+
+    function updateThemeUI() {
+      const btn = document.getElementById("btnThemeToggle");
+      const display = document.getElementById("themeDisplay");
+      if (btn) btn.innerText = "THEME: " + currentTheme;
+      if (display) display.innerText = currentTheme;
+    }
+
+    function padZero(num, size) {
+      let s = num + "";
+      while (s.length < size) s = "0" + s;
+      return s;
+    }
 
     function loadState() {
       try {
@@ -265,8 +489,13 @@
     function render() {
       const el = document.getElementById("counterValue");
       if (el) {
-        el.innerText = appState.pings;
+        el.innerText = padZero(appState.pings, 3);
       }
+      const tx = document.getElementById("lastTx");
+      if (tx) {
+        tx.innerText = appState.lastPingTime ? appState.lastPingTime.substring(11, 19) + "Z" : "NONE";
+      }
+      updateThemeUI();
     }
 
     function handlePing() {
@@ -282,6 +511,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      applyTheme(currentTheme);
       loadState();
     });
   </script>

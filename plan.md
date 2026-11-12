@@ -44,23 +44,37 @@ Each feature follows the AI-native specification pattern (`intent.md`, `spec.md`
 
 ---
 
-### Phase 3: Assembly, Verification & Deployment Gate
+### Phase 3: Assembly, Verification & Deployment Pipeline
 
-Before publishing to CloudCrane, the build must pass the 4-step quality gate:
+Every iteration and feature increment must strictly follow this 4-step build and release lifecycle:
 
 ```mermaid
 flowchart LR
-    Tests["1. Vitest Suite<br/>(npm test - 100% Pass)"] -->
-    Bundle["2. Bundle Compiler<br/>(npm run build - <1 MB)"] -->
-    Preflight["3. CloudCrane Gate<br/>(check_publish - 0 Errors)"] -->
-    Deploy["4. Live Publish<br/>(publish_app - Public Link)"]
+    Step1["1. Local Build & Test<br/>(npm test + npm run build)"] -->
+    Step2["2. Developer Review<br/>(Built-in Browser at localhost)"] -->
+    Step3["3. Git Commit<br/>(Stage & commit to main)"] -->
+    Step4["4. CloudCrane Build & Deploy<br/>(update_app + QR Code)"]
 ```
 
-1. **Automated Vitest Suite**: `npm test` $\to$ **100% pass rate**.
-2. **Bundle Verification**: `npm run build` $\to$ Bundle size $<1\text{ MB}$, valid HTML/CSS/JS syntax.
-3. **CloudCrane Pre-flight Gate**: Call `check_publish` via CloudCrane MCP $\to$ **0 problems, 0 warnings**.
-4. **Publish & Deploy**: Call `publish_app` or `update_app` via CloudCrane MCP $\to$ Returns public install URL.
-5. **QR Code Generation**: After every build and publish, automatically generate a scannable QR code image and inline card for the CloudCrane URL to enable instant testing on physical mobile devices.
+#### Step 1: Build the App Locally
+- **Unit & Integration Tests**: Run `npm test` (Vitest) $\to$ **100% pass rate** across all core modules.
+- **Bundle Compilation**: Run `npm run build` (`node scripts/bundle.js`) $\to$ Compile modular `src/` into self-contained `dist/index.html` strictly under **1 MB** with zero external CDNs.
+- **Local Validation**: Run `npm run lint` and `npm run validate` to ensure zero syntax errors.
+
+#### Step 2: Human / Developer Review in the Built-in Browser
+- Serve `dist/` on the local preview server (`http://localhost:4173/`).
+- Human/developer visually inspects and tests the application directly in the built-in browser view.
+- Verify touch targets ($\ge 44\times 44\text{px}$), safe-area insets, retro-tech aesthetics, theme toggle (CRT dark vs paper light), typography, and interaction responsiveness before committing or deploying.
+
+#### Step 3: Commit the Files
+- Once local review is approved, stage all modified source files, tests, and documentation.
+- Commit to the git repository on branch **`main`** with a clear semantic commit message documenting changes and test verification results.
+
+#### Step 4: Build & Deploy on CloudCrane
+- **Pre-flight Gate**: Call `check_publish` via CloudCrane MCP to ensure **0 problems and 0 warnings**.
+- **Deploy**: Call `publish_app` (for new apps) or `update_app` (for existing apps) with the compiled bundle, blueprint, and release notes.
+- **Visual Inspection**: Call `look_at_app` to inspect the live mobile screenshot ($390\times 844$) and verify CloudCrane Quality Score ($\ge 90$).
+- **Mobile QR Code Delivery**: Automatically invoke the **`cloudcrane-qr`** skill (`scripts/qr.js`) to generate and display the updated scannable QR code and install card for instant testing on physical mobile devices.
 
 ---
 

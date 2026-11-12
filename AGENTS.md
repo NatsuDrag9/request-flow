@@ -52,14 +52,17 @@ These rules govern all agent and human engineering on **RequestFlow** and must b
 
 ---
 
-## 5. Quality & Release Verification Gates
+## 5. Quality & Release Verification Pipeline
 
-Before marking any milestone complete or publishing to CloudCrane:
-1. **Automated Tests**: Run `npm test` $\to$ **100% pass rate**.
-2. **Bundle Verification**: Run `npm run build` $\to$ Bundle size $<1\text{ MB}$, zero syntax errors.
-3. **CloudCrane Pre-flight Gate**: Call `check_publish` via CloudCrane MCP $\to$ **0 problems, 0 warnings**.
-4. **Visual Inspection**: Call `look_at_app` $\to$ Confirm no layout collisions on $390\times 844$ mobile viewport.
-5. **QR Code Delivery**: After every publish or update (`publish_app` / `update_app`), always generate and display a scannable QR code and install card for the live URL to enable immediate physical mobile testing.
+Before releasing any milestone or feature increment, strictly execute these 4 pipeline stages in order:
+1. **Build Locally**: Run `npm test` $\to$ **100% pass rate**; run `npm run build` $\to$ Bundle size $<1\text{ MB}$, zero syntax errors.
+2. **Built-in Browser Review**: Serve `dist/` on `http://localhost:4173/` for the human/developer to review visually and functionally in the IDE built-in browser tab.
+3. **Commit Files**: Stage and commit approved changes to git on branch **`main`**.
+4. **CloudCrane Build & Deploy**:
+   - Call `check_publish` $\to$ **0 problems, 0 warnings**.
+   - Call `publish_app` or `update_app` to deploy the verified bundle.
+   - Call `look_at_app` $\to$ Confirm mobile layout on $390\times 844$ viewport.
+   - Invoke `cloudcrane-qr` (`scripts/qr.js`) to generate and display the live scannable QR code and mobile install card.
 
 ---
 

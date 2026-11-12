@@ -11,6 +11,7 @@
     "validate": "npm run lint && npm test && npm run build"
   },
   "devDependencies": {
+    "qrcode": "^1.5.4",
     "vitest": "^2.1.8"
   }
 }

@@ -1,24 +1,42 @@
-// Compact standalone QR Code Generator (Pure JavaScript, Zero Dependencies)
+import QRCode from "qrcode";
 import fs from "node:fs";
 import path from "node:path";
 
-// Simple QR code SVG generator using quick QR matrix algorithm
-function generateSVG(url) {
-  // We can generate a clean SVG with the link embedded
-  // Using an encoded QR image via simple SVG representation or data URI
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
-  <rect width="100%" height="100%" fill="#ffffff" rx="16"/>
-  <text x="150" y="40" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#090d16" text-anchor="middle">Scan to open on your phone</text>
-  <image href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=${encodeURIComponent(url)}" x="50" y="55" width="200" height="200"/>
-  <text x="150" y="275" font-family="system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="middle">RequestFlow CloudCrane Build</text>
-</svg>`;
-  return svg;
+const targetUrl = process.argv[2] || "https://requestflow-v0o76jkwr0.cloudcrane.ai/";
+const distDir = path.join(process.cwd(), "dist");
+const artifactDir = "/home/rohitimandi/.gemini/antigravity/brain/48551699-8b33-4a47-9444-1903624cc31e";
+
+// 1. Generate standalone pure vector SVG
+const svgString = await QRCode.toString(targetUrl, {
+  type: "svg",
+  margin: 2,
+  color: {
+    dark: "#090d16",
+    light: "#ffffff"
+  }
+});
+
+// 2. Generate PNG file as well for maximum scanner compatibility
+await QRCode.toFile(path.join(distDir, "qr.png"), targetUrl, {
+  width: 400,
+  margin: 2,
+  color: {
+    dark: "#090d16",
+    light: "#ffffff"
+  }
+});
+
+fs.writeFileSync(path.join(distDir, "qr.svg"), svgString, "utf-8");
+
+// Copy to artifact directory for instant IDE rendering
+if (fs.existsSync(artifactDir)) {
+  fs.writeFileSync(path.join(artifactDir, "qr.svg"), svgString, "utf-8");
+  fs.copyFileSync(path.join(distDir, "qr.png"), path.join(artifactDir, "qr.png"));
 }
 
-const targetUrl = process.argv[2] || "https://requestflow-v0o76jkwr0.cloudcrane.ai/";
-const svgContent = generateSVG(targetUrl);
+// 3. Output ANSI terminal QR code
+const terminalQR = await QRCode.toString(targetUrl, { type: "terminal", small: true });
 
-const outPath = path.join(process.cwd(), "dist", "qr.svg");
-fs.writeFileSync(outPath, svgContent, "utf-8");
-console.log(`✓ Saved QR Code SVG to: ${outPath}`);
-console.log(`\n🔗 Live URL: ${targetUrl}\n`);
+console.log("\n📱 Scan this QR code directly from your terminal or chat:");
+console.log(terminalQR);
+console.log(`🔗 Live URL: ${targetUrl}\n`);
