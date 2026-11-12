@@ -41,6 +41,31 @@
     }
 
     /* --- EXPLICIT THEME: CRT_DARK --- */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="PAPER_LIGHT"]) {
+        --bg-canvas: #101110;
+        --bg-surface: #181a17;
+        --bg-card: #212320;
+        --bg-inset: #0a0b09;
+        --border-strong: #4a4d45;
+        --border-subtle: #2d302a;
+        --border-active: #f59e0b;
+
+        --text-primary: #f5f2ea;
+        --text-secondary: #d4cfc4;
+        --text-tertiary: #b8b2a5;
+
+        --accent-primary: #f59e0b;
+        --accent-primary-text: #101110;
+        --accent-success: #22c55e;
+        --accent-error: #ef4444;
+
+        --shadow-retro: 2px 2px 0px #000000;
+        --shadow-retro-pressed: 0px 0px 0px #000000;
+        --shadow-retro-lg: 3px 3px 0px #000000;
+      }
+    }
+
     [data-theme="CRT_DARK"] {
       --bg-canvas: #101110;
       --bg-surface: #181a17;
@@ -113,10 +138,10 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding-top: max(var(--safe-top), 12px);
-      padding-bottom: max(var(--safe-bottom), 12px);
-      padding-left: 16px;
-      padding-right: 16px;
+      padding-top: max(var(--safe-top), 10px);
+      padding-bottom: max(var(--safe-bottom), 10px);
+      padding-left: 12px;
+      padding-right: 12px;
       user-select: none;
       transition: background-color 0.15s ease, color 0.15s ease;
     }
@@ -132,7 +157,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      min-height: 52px;
+      min-height: 50px;
     }
 
     .brand {
@@ -217,9 +242,10 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
-      padding: 16px 0;
+      padding: 10px 0;
+      gap: 10px;
     }
 
     .workstation-chassis {
@@ -227,32 +253,161 @@
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-retro-lg);
-      padding: 20px 18px;
+      padding: 14px 14px;
       width: 100%;
-      max-width: 380px;
+      max-width: 420px;
     }
 
-    .chassis-header {
+    /* Scenario Selector Pills */
+    .scenario-nav {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scenario-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      min-height: 44px;
+      padding: 6px 10px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: 2px 2px 0px var(--border-strong);
+      cursor: pointer;
+      white-space: nowrap;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .scenario-pill:active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+    }
+
+    .scenario-pill.active {
+      background: var(--border-active);
+      color: var(--accent-primary-text);
+      border-color: var(--border-strong);
+    }
+
+    /* 5-Node Vertical Subway Track */
+    .pipeline-track {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      margin: 8px 0 14px;
+      padding-left: 10px;
+    }
+
+    .track-rail {
+      position: absolute;
+      left: 28px;
+      top: 14px;
+      bottom: 14px;
+      width: 4px;
+      background: var(--border-subtle);
+      z-index: 1;
+    }
+
+    .node-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+      padding: 4px 0;
+    }
+
+    .node-station-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 3px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .node-card {
+      flex: 1;
+      min-height: 44px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
-      border-bottom: 2px dashed var(--border-subtle);
-      padding-bottom: 8px;
+      box-shadow: 1px 1px 0px var(--border-strong);
+      transition: all 0.15s ease;
     }
 
-    .chassis-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-secondary);
-      font-weight: 700;
+    .node-info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .chassis-id {
+    .node-name {
       font-size: 12px;
-      color: var(--border-active);
       font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+    }
+
+    .node-role {
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    .node-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 2px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+      color: var(--text-secondary);
+    }
+
+    /* Active Station Glow */
+    .node-row.active .node-station-dot {
+      border-color: var(--border-active);
+      background: var(--border-active);
+      color: var(--accent-primary-text);
+      transform: scale(1.08);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+
+    .node-row.active .node-card {
+      border-color: var(--border-active);
+      box-shadow: 2px 2px 0px var(--border-strong);
+    }
+
+    .node-row.active .node-badge {
+      background: var(--border-active);
+      color: var(--accent-primary-text);
+      border-color: var(--border-strong);
+    }
+
+    /* Passed State */
+    .node-row.passed .node-station-dot {
+      border-color: var(--accent-success);
+      color: var(--accent-success);
     }
 
     /* Inset CRT Phosphor Telemetry Well */
@@ -260,8 +415,8 @@
       background: var(--bg-inset);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      padding: 16px 14px;
-      margin-bottom: 18px;
+      padding: 12px 12px;
+      margin-bottom: 14px;
       box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.25);
     }
 
@@ -269,33 +424,39 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .telemetry-title {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 700;
     }
 
-    .telemetry-counter {
-      font-size: 42px;
+    .telemetry-status-pill {
+      font-size: 11px;
       font-weight: 800;
       color: var(--border-active);
-      line-height: 1;
-      letter-spacing: 2px;
-      margin: 8px 0 12px;
-      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+    }
+
+    .telemetry-main-readout {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--border-active);
+      line-height: 1.3;
+      letter-spacing: 0.5px;
+      margin: 4px 0 8px;
     }
 
     .telemetry-log {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-tertiary);
       border-top: 2px dotted var(--border-subtle);
       padding-top: 8px;
-      line-height: 1.6;
+      line-height: 1.5;
       font-weight: 600;
     }
 
@@ -305,18 +466,18 @@
     }
 
     /* Tactile Mechanical Controls */
-    .btn-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
     .btn-retro {
       font-family: var(--font-mono);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.5px;
       min-height: 48px;
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
@@ -327,7 +488,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       touch-action: manipulation;
       transition: transform 0.05s ease, box-shadow 0.05s ease;
     }
@@ -341,6 +502,7 @@
       background: var(--border-active);
       color: var(--accent-primary-text);
       border-color: var(--border-strong);
+      grid-column: span 2;
     }
 
     .btn-retro-secondary {
@@ -351,7 +513,7 @@
 
     /* Industrial Status Footer */
     footer {
-      padding: 10px 12px;
+      padding: 8px 12px;
       background: var(--bg-surface);
       border: 2px solid var(--border-strong);
       border-radius: var(--radius-sm);
@@ -375,38 +537,115 @@
       <button class="theme-toggle-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Switch between CRT_DARK and PAPER_LIGHT">
         THEME: CRT_DARK
       </button>
-      <div class="sys-badge">RDY</div>
+      <div class="sys-badge" id="engineStatusBadge">RDY</div>
     </div>
   </header>
 
   <main>
     <div class="workstation-chassis">
-      <div class="chassis-header">
-        <span class="chassis-label">BENCH TEST CONSOLE</span>
-        <span class="chassis-id">REV_0.2</span>
+      
+      <!-- Scenario Selector Pills -->
+      <div class="scenario-nav">
+        <button class="scenario-pill active" id="pill-201" onclick="switchScenario('201-created')">
+          [ 201 CREATED ]
+        </button>
+        <button class="scenario-pill" id="pill-401" onclick="switchScenario('401-unauthorized')">
+          [ 401 UNAUTH ]
+        </button>
+        <button class="scenario-pill" id="pill-504" onclick="switchScenario('504-timeout')">
+          [ 504 TIMEOUT ]
+        </button>
       </div>
 
+      <!-- Subway Track -->
+      <div class="pipeline-track">
+        <div class="track-rail"></div>
+
+        <div class="node-row active" id="node-row-0">
+          <div class="node-station-dot">01</div>
+          <div class="node-card">
+            <div class="node-info-col">
+              <span class="node-name">CLIENT</span>
+              <span class="node-role">Browser &bull; Payload &amp; JWT</span>
+            </div>
+            <span class="node-badge" id="node-badge-0">REQ</span>
+          </div>
+        </div>
+
+        <div class="node-row" id="node-row-1">
+          <div class="node-station-dot">02</div>
+          <div class="node-card">
+            <div class="node-info-col">
+              <span class="node-name">NETWORK &amp; TLS</span>
+              <span class="node-role">DNS &bull; TLS 1.3 Handshake</span>
+            </div>
+            <span class="node-badge" id="node-badge-1">IDLE</span>
+          </div>
+        </div>
+
+        <div class="node-row" id="node-row-2">
+          <div class="node-station-dot">03</div>
+          <div class="node-card">
+            <div class="node-info-col">
+              <span class="node-name">API GATEWAY</span>
+              <span class="node-role">Nginx &bull; Rate Limit &amp; Routing</span>
+            </div>
+            <span class="node-badge" id="node-badge-2">IDLE</span>
+          </div>
+        </div>
+
+        <div class="node-row" id="node-row-3">
+          <div class="node-station-dot">04</div>
+          <div class="node-card">
+            <div class="node-info-col">
+              <span class="node-name">BACKEND APP</span>
+              <span class="node-role">Express &bull; Auth &amp; Controller</span>
+            </div>
+            <span class="node-badge" id="node-badge-3">IDLE</span>
+          </div>
+        </div>
+
+        <div class="node-row" id="node-row-4">
+          <div class="node-station-dot">05</div>
+          <div class="node-card">
+            <div class="node-info-col">
+              <span class="node-name">DATABASE</span>
+              <span class="node-role">PostgreSQL 16 &bull; ACID Engine</span>
+            </div>
+            <span class="node-badge" id="node-badge-4">IDLE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Well -->
       <div class="telemetry-well">
         <div class="telemetry-row">
-          <span class="telemetry-title">SIMULATED CYCLES</span>
-          <span class="telemetry-title">RAM: OK</span>
+          <span class="telemetry-title">HOP TELEMETRY</span>
+          <span class="telemetry-status-pill" id="telemetryState">READY</span>
         </div>
-        <div class="telemetry-counter" id="counterValue">000</div>
+        <div class="telemetry-main-readout" id="telemetryTitle">CLIENT: CONSTRUCTING REQUEST</div>
         <div class="telemetry-log">
-          LAST_TX: <span id="lastTx">NONE</span><br/>
-          THEME: <span id="themeDisplay">CRT_DARK</span>
+          DIRECTION: <span id="telemetryDir">DOWNSTREAM</span> &bull; TARGET: <span id="telemetryHalt">DB (NODE 05)</span><br/>
+          ACTION: <span id="telemetryDesc">Constructing POST request with Bearer JWT token.</span>
         </div>
       </div>
 
-      <div class="btn-group">
-        <button class="btn-retro btn-retro-primary" id="btnPing" onclick="handlePing()">
-          [ ▶ EXEC PING ]
+      <!-- Mechanical Action Bar -->
+      <div class="controls-grid">
+        <button class="btn-retro btn-retro-primary" id="btnPlayPause" onclick="togglePlayPause()">
+          [ ▶ PLAY AUTO ]
         </button>
-
-        <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()">
-          [ ↺ RST COUNTER ]
+        <button class="btn-retro btn-retro-secondary" id="btnStepBack" onclick="handleStepBack()">
+          [ ⏮ STEP BACK ]
+        </button>
+        <button class="btn-retro btn-retro-secondary" id="btnStepForward" onclick="handleStepForward()">
+          [ ⏭ STEP FWD ]
+        </button>
+        <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()" style="grid-column: span 2;">
+          [ ↺ RESET TO CLIENT ]
         </button>
       </div>
+
     </div>
   </main>
 
@@ -416,17 +655,449 @@
   </footer>
 
   <script>
-    const STORAGE_KEY = "requestflow_state_v1";
-    const THEME_KEY = "requestflow_theme_mode";
+/* Compiled RequestFlowEngine */
+"use strict";
+var RequestFlowEngine = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
+  // src/features/01-pipeline-explorer/engine.ts
+  var engine_exports = {};
+  __export(engine_exports, {
+    PipelineEngine: () => PipelineEngine,
+    SCENARIOS: () => SCENARIOS,
+    getAllScenarios: () => getAllScenarios,
+    getScenario: () => getScenario
+  });
+
+  // src/features/01-pipeline-explorer/scenarios.ts
+  var SCENARIOS = {
+    "201-created": {
+      id: "201-created",
+      code: "201",
+      name: "201 Created (Order Creation)",
+      summary: "Happy path: authenticated request creates a new order in PostgreSQL and commits transaction.",
+      haltNode: 4,
+      resultStatus: "HALTED_SUCCESS",
+      stages: {
+        0: {
+          nodeId: "client",
+          title: "Client Application",
+          description: "Browser constructs POST /api/v1/orders with JSON payload and Bearer JWT token.",
+          wireData: {
+            method: "POST",
+            url: "https://api.cloudcrane.ai/v1/orders",
+            headers: {
+              "Host": "api.cloudcrane.ai",
+              "User-Agent": "RequestFlow/1.0 (Mobile Web)",
+              "Authorization": "Bearer eyJhbGciOi...",
+              "Content-Type": "application/json"
+            },
+            payload: { item: "vintage_crt_monitor", quantity: 1, currency: "USD" }
+          }
+        },
+        1: {
+          nodeId: "network",
+          title: "Network & TLS 1.3 Handshake",
+          description: "DNS resolution to 198.51.100.42, TCP 3-way handshake, and TLS 1.3 cryptographic session setup.",
+          wireData: {
+            tls: {
+              version: "TLS 1.3",
+              cipher: "TLS_AES_256_GCM_SHA384",
+              sni: "api.cloudcrane.ai",
+              handshakeMs: 42
+            }
+          }
+        },
+        2: {
+          nodeId: "gateway",
+          title: "API Gateway (Nginx / Envoy)",
+          description: "Terminates TLS, evaluates rate limit quotas, attaches X-Request-ID, and forwards to backend upstream.",
+          wireData: {
+            gateway: {
+              routingRule: "/v1/orders -> upstream_backend:8080",
+              corsAllowed: true,
+              rateLimitRemaining: 98,
+              traceId: "req_trc_9a8f21cd"
+            }
+          }
+        },
+        3: {
+          nodeId: "backend",
+          title: "Backend Application (Express)",
+          description: "Validates JWT signature, checks user role, parses request body, and opens a database connection.",
+          wireData: {
+            backend: {
+              authStatus: "AUTHENTICATED",
+              userId: 42,
+              middlewareChain: ["cors()", "jwtVerify()", "rateLimiter()", "orderController()"],
+              handler: "OrderService.createOrder()"
+            }
+          }
+        },
+        4: {
+          nodeId: "database",
+          title: "Database Engine (PostgreSQL)",
+          description: "ACID transaction BEGIN -> INSERT row into orders table -> COMMIT transaction.",
+          wireData: {
+            database: {
+              engine: "PostgreSQL 16",
+              isolationLevel: "READ COMMITTED",
+              sql: "INSERT INTO orders (user_id, item, qty, status) VALUES (42, 'vintage_crt_monitor', 1, 'CONFIRMED') RETURNING id;",
+              lockStatus: "EXCLUSIVE_ROW_LOCK_GRANTED",
+              executionMs: 8
+            },
+            response: {
+              statusCode: 201,
+              statusText: "Created",
+              body: { orderId: 8912, status: "created", createdAt: "2026-11-12T16:00:00Z" }
+            }
+          }
+        }
+      }
+    },
+    "401-unauthorized": {
+      id: "401-unauthorized",
+      code: "401",
+      name: "401 Unauthorized (Auth Rejection)",
+      summary: "Rejection: expired or missing Bearer token caught at backend middleware layer before reaching database.",
+      haltNode: 3,
+      resultStatus: "HALTED_ERROR",
+      stages: {
+        0: {
+          nodeId: "client",
+          title: "Client Application",
+          description: "Browser sends request with an expired JWT access token in the Authorization header.",
+          wireData: {
+            method: "POST",
+            url: "https://api.cloudcrane.ai/v1/orders",
+            headers: {
+              "Host": "api.cloudcrane.ai",
+              "Authorization": "Bearer expired_or_malformed_token"
+            }
+          }
+        },
+        1: {
+          nodeId: "network",
+          title: "Network & TLS 1.3 Handshake",
+          description: "Transport connection established normally; transport encryption does not validate application tokens.",
+          wireData: {
+            tls: {
+              version: "TLS 1.3",
+              cipher: "TLS_AES_256_GCM_SHA384",
+              sni: "api.cloudcrane.ai",
+              handshakeMs: 38
+            }
+          }
+        },
+        2: {
+          nodeId: "gateway",
+          title: "API Gateway (Nginx / Envoy)",
+          description: "Gateway routes request to application tier as path /v1/orders requires application-level JWT parsing.",
+          wireData: {
+            gateway: {
+              routingRule: "/v1/orders -> upstream_backend:8080",
+              corsAllowed: true,
+              rateLimitRemaining: 97,
+              traceId: "req_trc_401bad9a"
+            }
+          }
+        },
+        3: {
+          nodeId: "backend",
+          title: "Backend Application (Express)",
+          description: "JWT verification fails: TokenExpiredError. Execution halts immediately; database is never reached.",
+          wireData: {
+            backend: {
+              authStatus: "REJECTED (TokenExpiredError)",
+              userId: null,
+              middlewareChain: ["cors()", "jwtVerify() [FAILED]"],
+              handler: "ErrorHandler.unauthorized()"
+            },
+            response: {
+              statusCode: 401,
+              statusText: "Unauthorized",
+              body: { error: "invalid_token", message: "JWT token expired at 2026-11-12T15:00:00Z" }
+            }
+          }
+        },
+        4: {
+          nodeId: "database",
+          title: "Database Engine (PostgreSQL)",
+          description: "UNREACHED: Request halted at auth middleware, preventing database query execution.",
+          wireData: {
+            database: {
+              engine: "PostgreSQL 16",
+              isolationLevel: "NONE",
+              sql: "-- UNREACHED --",
+              lockStatus: "IDLE",
+              executionMs: 0
+            }
+          }
+        }
+      }
+    },
+    "504-timeout": {
+      id: "504-timeout",
+      code: "504",
+      name: "504 Gateway Timeout (DB Lock Deadlock)",
+      summary: "Infrastructure failure: database query hangs on table lock until API Gateway upstream timeout fires.",
+      haltNode: 4,
+      resultStatus: "HALTED_ERROR",
+      stages: {
+        0: {
+          nodeId: "client",
+          title: "Client Application",
+          description: "Browser initiates order placement and awaits HTTP response.",
+          wireData: {
+            method: "POST",
+            url: "https://api.cloudcrane.ai/v1/orders",
+            headers: {
+              "Host": "api.cloudcrane.ai",
+              "Authorization": "Bearer eyJhbGciOi..."
+            }
+          }
+        },
+        1: {
+          nodeId: "network",
+          title: "Network & TLS 1.3 Handshake",
+          description: "Network transport connected normally.",
+          wireData: {
+            tls: {
+              version: "TLS 1.3",
+              cipher: "TLS_AES_256_GCM_SHA384",
+              sni: "api.cloudcrane.ai",
+              handshakeMs: 40
+            }
+          }
+        },
+        2: {
+          nodeId: "gateway",
+          title: "API Gateway (Nginx / Envoy)",
+          description: "Proxies request to backend upstream with a 5000ms upstream_timeout guard.",
+          wireData: {
+            gateway: {
+              routingRule: "/v1/orders -> upstream_backend:8080",
+              corsAllowed: true,
+              rateLimitRemaining: 96,
+              traceId: "req_trc_504tmout"
+            }
+          }
+        },
+        3: {
+          nodeId: "backend",
+          title: "Backend Application (Express)",
+          description: "Authentication passes; backend submits SQL query to PostgreSQL and blocks awaiting result.",
+          wireData: {
+            backend: {
+              authStatus: "AUTHENTICATED",
+              userId: 42,
+              middlewareChain: ["cors()", "jwtVerify()", "orderController()"],
+              handler: "OrderService.createOrderWithInventoryLock()"
+            }
+          }
+        },
+        4: {
+          nodeId: "database",
+          title: "Database Engine (PostgreSQL)",
+          description: "Query waits on an uncommitted exclusive row lock from another transaction until gateway terminates connection.",
+          wireData: {
+            database: {
+              engine: "PostgreSQL 16",
+              isolationLevel: "SERIALIZABLE",
+              sql: "SELECT * FROM inventory WHERE id = 101 FOR UPDATE; -- BLOCKED ON LOCK",
+              lockStatus: "LOCK_WAIT_TIMEOUT (>5000ms)",
+              executionMs: 5002
+            },
+            response: {
+              statusCode: 504,
+              statusText: "Gateway Timeout",
+              body: { error: "gateway_timeout", message: "Upstream application timed out after 5000ms" }
+            }
+          }
+        }
+      }
+    }
+  };
+  function getScenario(id) {
+    const scenario = SCENARIOS[id];
+    if (!scenario) {
+      throw new Error(`Unknown scenario: "${id}". Available: ${Object.keys(SCENARIOS).join(", ")}`);
+    }
+    return scenario;
+  }
+  function getAllScenarios() {
+    return Object.values(SCENARIOS);
+  }
+
+  // src/features/01-pipeline-explorer/engine.ts
+  var PipelineEngine = class {
+    scenario;
+    status = "READY";
+    currentNode = 0;
+    direction = "DOWNSTREAM";
+    listeners = /* @__PURE__ */ new Map();
+    timer = null;
+    hopDelayMs = 600;
+    constructor(options = {}) {
+      const id = options.scenarioId || "201-created";
+      this.scenario = getScenario(id);
+      if (options.hopDelayMs) {
+        this.hopDelayMs = options.hopDelayMs;
+      }
+    }
+    getState() {
+      return {
+        status: this.status,
+        currentNode: this.currentNode,
+        direction: this.direction,
+        scenarioId: this.scenario.id,
+        haltNode: this.scenario.haltNode,
+        isCompleted: this.status === "HALTED_SUCCESS" || this.status === "HALTED_ERROR"
+      };
+    }
+    getScenario() {
+      return this.scenario;
+    }
+    setScenario(scenarioId) {
+      this.scenario = getScenario(scenarioId);
+      this.reset();
+    }
+    on(event, listener) {
+      if (!this.listeners.has(event)) {
+        this.listeners.set(event, /* @__PURE__ */ new Set());
+      }
+      this.listeners.get(event).add(listener);
+    }
+    off(event, listener) {
+      const set = this.listeners.get(event);
+      if (set) {
+        set.delete(listener);
+      }
+    }
+    emit(event, ...args) {
+      const set = this.listeners.get(event);
+      if (set) {
+        for (const fn of set) {
+          fn(...args);
+        }
+      }
+    }
+    start(delayMs) {
+      if (this.status === "HALTED_SUCCESS" || this.status === "HALTED_ERROR") {
+        this.reset();
+      }
+      if (delayMs) {
+        this.hopDelayMs = delayMs;
+      }
+      this.stopTimer();
+      this.status = "IN_FLIGHT";
+      this.emit("stateChange", this.getState());
+      this.timer = setInterval(() => {
+        this.stepForwardInternal(true);
+      }, this.hopDelayMs);
+    }
+    pause() {
+      this.stopTimer();
+      if (this.status === "IN_FLIGHT") {
+        this.status = "STEPPING";
+        this.emit("stateChange", this.getState());
+      }
+    }
+    reset() {
+      this.stopTimer();
+      this.status = "READY";
+      this.currentNode = 0;
+      this.direction = "DOWNSTREAM";
+      this.emit("stateChange", this.getState());
+    }
+    stepForward() {
+      this.stopTimer();
+      this.stepForwardInternal(false);
+    }
+    stepForwardInternal(isAuto) {
+      if (this.status === "HALTED_SUCCESS" || this.status === "HALTED_ERROR") {
+        this.stopTimer();
+        return;
+      }
+      if (!isAuto) {
+        this.status = "STEPPING";
+      }
+      if (this.direction === "DOWNSTREAM") {
+        if (this.currentNode < this.scenario.haltNode) {
+          this.currentNode += 1;
+        } else {
+          this.direction = "UPSTREAM";
+          this.currentNode -= 1;
+        }
+      } else {
+        if (this.currentNode > 0) {
+          this.currentNode -= 1;
+        }
+        if (this.currentNode === 0) {
+          this.stopTimer();
+          this.status = this.scenario.resultStatus;
+          this.emit("stateChange", this.getState());
+          this.emit("complete", this.getState());
+          return;
+        }
+      }
+      this.emit("stateChange", this.getState());
+      this.emit("nodeActivate", this.currentNode, this.direction);
+    }
+    stepBackward() {
+      this.stopTimer();
+      if (this.status === "READY") {
+        return;
+      }
+      this.status = "STEPPING";
+      if (this.direction === "DOWNSTREAM") {
+        if (this.currentNode > 0) {
+          this.currentNode -= 1;
+          if (this.currentNode === 0) {
+            this.status = "READY";
+          }
+        }
+      } else {
+        if (this.currentNode < this.scenario.haltNode) {
+          this.currentNode += 1;
+          if (this.currentNode === this.scenario.haltNode) {
+            this.direction = "DOWNSTREAM";
+          }
+        }
+      }
+      this.emit("stateChange", this.getState());
+      this.emit("nodeActivate", this.currentNode, this.direction);
+    }
+    stopTimer() {
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    }
+  };
+  return __toCommonJS(engine_exports);
+})();
+
+
+    const THEME_KEY = "requestflow_theme_mode";
     const THEME_CRT = "CRT_DARK";
     const THEME_PAPER = "PAPER_LIGHT";
-
-    let appState = {
-      version: 1,
-      pings: 0,
-      lastPingTime: null
-    };
 
     let currentTheme = localStorage.getItem(THEME_KEY);
     if (currentTheme !== THEME_CRT && currentTheme !== THEME_PAPER) {
@@ -451,68 +1122,142 @@
 
     function updateThemeUI() {
       const btn = document.getElementById("btnThemeToggle");
-      const display = document.getElementById("themeDisplay");
       if (btn) btn.innerText = "THEME: " + currentTheme;
-      if (display) display.innerText = currentTheme;
     }
 
-    function padZero(num, size) {
-      let s = num + "";
-      while (s.length < size) s = "0" + s;
-      return s;
+    /* Engine Integration */
+    let engine = null;
+
+    function initEngine() {
+      if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PipelineEngine) {
+        engine = new RequestFlowEngine.PipelineEngine({ scenarioId: "201-created", hopDelayMs: 650 });
+        engine.on("stateChange", updateView);
+        engine.on("complete", onPipelineComplete);
+        updateView(engine.getState());
+      } else {
+        console.warn("RequestFlowEngine not loaded yet.");
+      }
     }
 
-    function loadState() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed.pings === "number") {
-            appState = parsed;
-          }
+    function updateView(state) {
+      if (!engine) return;
+      const scenario = engine.getScenario();
+      const stage = scenario.stages[state.currentNode];
+
+      // Update Subway track rows
+      for (let i = 0; i < 5; i++) {
+        const row = document.getElementById("node-row-" + i);
+        const badge = document.getElementById("node-badge-" + i);
+        if (!row || !badge) continue;
+
+        row.classList.remove("active", "passed");
+
+        if (i === state.currentNode) {
+          row.classList.add("active");
+          badge.innerText = state.direction === "DOWNSTREAM" ? "▼ REQ" : "▲ RES";
+        } else if (
+          (state.direction === "DOWNSTREAM" && i < state.currentNode) ||
+          (state.direction === "UPSTREAM" && i > state.currentNode && i <= scenario.haltNode)
+        ) {
+          row.classList.add("passed");
+          badge.innerText = "PASS";
+        } else {
+          badge.innerText = "IDLE";
         }
-      } catch (err) {
-        console.warn("Storage load warning", err);
       }
-      render();
+
+      // Update Play/Pause button text
+      const playBtn = document.getElementById("btnPlayPause");
+      if (playBtn) {
+        playBtn.innerText = state.status === "IN_FLIGHT" ? "[ ⏸ PAUSE ]" : "[ ▶ PLAY AUTO ]";
+      }
+
+      // Update Header Status Badge
+      const statusBadge = document.getElementById("engineStatusBadge");
+      if (statusBadge) {
+        if (state.status === "HALTED_SUCCESS") {
+          statusBadge.innerText = "201_OK";
+          statusBadge.style.color = "var(--accent-success)";
+        } else if (state.status === "HALTED_ERROR") {
+          statusBadge.innerText = scenario.code + "_ERR";
+          statusBadge.style.color = "var(--accent-error)";
+        } else if (state.status === "IN_FLIGHT") {
+          statusBadge.innerText = "RUN";
+          statusBadge.style.color = "var(--border-active)";
+        } else {
+          statusBadge.innerText = "RDY";
+          statusBadge.style.color = "var(--accent-success)";
+        }
+      }
+
+      // Update Telemetry Well
+      const tState = document.getElementById("telemetryState");
+      const tTitle = document.getElementById("telemetryTitle");
+      const tDir = document.getElementById("telemetryDir");
+      const tHalt = document.getElementById("telemetryHalt");
+      const tDesc = document.getElementById("telemetryDesc");
+
+      if (tState) tState.innerText = state.status;
+      if (tDir) tDir.innerText = state.direction;
+      if (tHalt) tHalt.innerText = "NODE 0" + (scenario.haltNode + 1);
+
+      if (tTitle && stage) {
+        tTitle.innerText = stage.title.toUpperCase();
+      }
+      if (tDesc && stage) {
+        tDesc.innerText = stage.description;
+      }
     }
 
-    function saveState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-      } catch (err) {
-        console.warn("Storage save warning", err);
+    function togglePlayPause() {
+      if (!engine) return;
+      const state = engine.getState();
+      if (state.status === "IN_FLIGHT") {
+        engine.pause();
+      } else {
+        engine.start();
       }
-      render();
     }
 
-    function render() {
-      const el = document.getElementById("counterValue");
-      if (el) {
-        el.innerText = padZero(appState.pings, 3);
-      }
-      const tx = document.getElementById("lastTx");
-      if (tx) {
-        tx.innerText = appState.lastPingTime ? appState.lastPingTime.substring(11, 19) + "Z" : "NONE";
-      }
-      updateThemeUI();
+    function handleStepForward() {
+      if (!engine) return;
+      engine.stepForward();
     }
 
-    function handlePing() {
-      appState.pings += 1;
-      appState.lastPingTime = new Date().toISOString();
-      saveState();
+    function handleStepBack() {
+      if (!engine) return;
+      engine.stepBackward();
     }
 
     function handleReset() {
-      appState.pings = 0;
-      appState.lastPingTime = null;
-      saveState();
+      if (!engine) return;
+      engine.reset();
+    }
+
+    function switchScenario(scenarioId) {
+      if (!engine) return;
+      engine.setScenario(scenarioId);
+
+      // Update active pill button
+      ["201", "401", "504"].forEach((id) => {
+        const pill = document.getElementById("pill-" + id);
+        if (pill) {
+          if (scenarioId.startsWith(id)) {
+            pill.classList.add("active");
+          } else {
+            pill.classList.remove("active");
+          }
+        }
+      });
+    }
+
+    function onPipelineComplete(state) {
+      console.log("Pipeline lifecycle complete:", state);
     }
 
     window.addEventListener("DOMContentLoaded", () => {
       applyTheme(currentTheme);
-      loadState();
+      initEngine();
     });
   </script>
 </body>
