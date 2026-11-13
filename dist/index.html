@@ -22,7 +22,7 @@
 `),w=y.map(l=>{let g="IDLE";b&&l.index===o&&(e>=o||a==="UPSTREAM")?g="ERROR":l.index===e?g=i?"TRANSIT":"ACTIVE":i&&r!==null&&l.index===r?g="TRANSIT":(a==="DOWNSTREAM"&&l.index<e||a==="UPSTREAM"&&l.index>e&&l.index<=o)&&(g="PASSED");let L=g==="ERROR"?"iso-node error":g==="ACTIVE"?"iso-node active":g==="TRANSIT"?"iso-node in-transit":g==="PASSED"?"iso-node passed":"iso-node idle",_=T[l.id]||"";return`
       <g class="${L}" id="iso-node-${l.index}" onclick="inspectNode(${l.index})" cursor="pointer" role="button" tabindex="0" aria-label="Inspect ${l.name}">
         <!-- Invisible Touch Target (>= 48x48px for mobile tap compliance) -->
-        <rect x="${l.x-24}" y="${l.y-12}" width="48" height="48" fill="transparent" class="iso-node-hitbox" />
+        <rect x="${l.x-30}" y="${l.y-26}" width="60" height="60" fill="transparent" class="iso-node-hitbox" pointer-events="all" />
         <!-- Isometric Ambient Halo (Pulsing Red on Failure) -->
         <ellipse cx="${l.x}" cy="${l.y+8}" rx="24" ry="12" class="iso-node-halo" />
         <!-- Technical Node Icon Container -->

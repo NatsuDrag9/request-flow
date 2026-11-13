@@ -263,7 +263,7 @@ export function renderIsometricNetworkMap(
     return `
       <g class="${nodeClass}" id="iso-node-${pos.index}" onclick="inspectNode(${pos.index})" cursor="pointer" role="button" tabindex="0" aria-label="Inspect ${pos.name}">
         <!-- Invisible Touch Target (>= 48x48px for mobile tap compliance) -->
-        <rect x="${pos.x - 24}" y="${pos.y - 12}" width="48" height="48" fill="transparent" class="iso-node-hitbox" />
+        <rect x="${pos.x - 30}" y="${pos.y - 26}" width="60" height="60" fill="transparent" class="iso-node-hitbox" pointer-events="all" />
         <!-- Isometric Ambient Halo (Pulsing Red on Failure) -->
         <ellipse cx="${pos.x}" cy="${pos.y + 8}" rx="24" ry="12" class="iso-node-halo" />
         <!-- Technical Node Icon Container -->
