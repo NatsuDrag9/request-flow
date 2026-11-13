@@ -216,15 +216,21 @@ export function renderIsometricNetworkMap(
       direction === "UPSTREAM" &&
       idx < haltNode;
 
-    const strokeClass = isThisWireInTransit
-      ? (isErrorReturnWire ? "iso-wire iso-wire-in-transit iso-wire-error" : "iso-wire iso-wire-in-transit")
-      : isErrorReturnWire
-      ? "iso-wire iso-wire-active iso-wire-error"
-      : isWireActive
-      ? "iso-wire iso-wire-active"
-      : "iso-wire iso-wire-idle";
+    const isWirePassed =
+      (direction === "DOWNSTREAM" && activeNodeIndex > idx) ||
+      (direction === "UPSTREAM" && activeNodeIndex <= idx && idx < haltNode);
 
-    return `<path d="${wire.d}" class="${strokeClass}" stroke-dasharray="4 3" fill="none" id="iso-wire-${idx}" />`;
+    const strokeClass = isThisWireInTransit
+      ? (isErrorReturnWire ? "iso-wire-path active in-transit error iso-wire-error" : "iso-wire-path active in-transit")
+      : isErrorReturnWire
+      ? "iso-wire-path active error iso-wire-error"
+      : isWireActive
+      ? "iso-wire-path active"
+      : isWirePassed
+      ? "iso-wire-path passed"
+      : "iso-wire-path idle";
+
+    return `<path d="${wire.d}" class="${strokeClass}" stroke-dasharray="4 4" fill="none" id="iso-wire-${idx}" />`;
   }).join("\n");
 
   const nodesSvg = nodePositions.map((pos) => {
@@ -247,39 +253,30 @@ export function renderIsometricNetworkMap(
       state = "PASSED";
     }
 
-    const nodeClass =
-      state === "ERROR"
-        ? "iso-node error"
-        : state === "ACTIVE"
-        ? "iso-node active"
-        : state === "TRANSIT"
-        ? "iso-node in-transit"
-        : state === "PASSED"
-        ? "iso-node passed"
-        : "iso-node idle";
+    const nodeClass = `iso-node ${state.toLowerCase()}`;
 
     const icon = NODE_ICONS[pos.id] || "";
 
     return `
-      <g class="${nodeClass}" id="iso-node-${pos.index}" onclick="inspectNode(${pos.index})" cursor="pointer" role="button" tabindex="0" aria-label="Inspect ${pos.name}">
+      <g class="${nodeClass}" id="iso-node-${pos.index}" onclick="inspectNode(${pos.index})" cursor="pointer" role="button" tabindex="0" aria-label="Station 0${pos.index + 1}: ${pos.name} (${state})">
         <!-- Invisible Touch Target (>= 48x48px for mobile tap compliance) -->
-        <rect x="${pos.x - 30}" y="${pos.y - 26}" width="60" height="60" fill="transparent" class="iso-node-hitbox" pointer-events="all" />
+        <rect x="${pos.x - 32}" y="${pos.y - 28}" width="64" height="64" fill="transparent" class="iso-node-hitbox" pointer-events="all" />
         <!-- Isometric Ambient Halo (Pulsing Red on Failure) -->
         <ellipse cx="${pos.x}" cy="${pos.y + 8}" rx="24" ry="12" class="iso-node-halo" />
         <!-- Technical Node Icon Container -->
-        <g transform="translate(${pos.x - 16}, ${pos.y - 12})">
+        <g class="iso-node-icon" transform="translate(${pos.x - 16}, ${pos.y - 12})">
           ${icon}
         </g>
         <!-- Technical Labels -->
-        <text x="${pos.x}" y="${pos.y + 26}" class="iso-node-label" text-anchor="middle">${pos.name}</text>
+        <text x="${pos.x}" y="${pos.y + 26}" class="iso-node-label" text-anchor="middle">0${pos.index + 1} ${pos.name}</text>
         <text x="${pos.x}" y="${pos.y + 36}" class="iso-node-ip" text-anchor="middle">${pos.ip}</text>
       </g>
     `;
   }).join("\n");
 
   return `
-    <div class="isometric-canvas-wrapper" id="isometricCanvas">
-      <svg viewBox="0 0 420 220" class="iso-network-svg" preserveAspectRatio="xMidYMid meet">
+    <div class="iso-map-container isometric-canvas-wrapper" id="isometricCanvas">
+      <svg viewBox="0 0 420 220" class="iso-map-svg iso-network-svg" preserveAspectRatio="xMidYMid meet">
         <defs>
           <pattern id="isoGrid" width="40" height="20" patternUnits="userSpaceOnUse">
             <path d="M 0 10 L 20 0 L 40 10 L 20 20 Z" fill="none" class="iso-grid-line" stroke-width="0.5" />

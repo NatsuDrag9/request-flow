@@ -749,6 +749,52 @@
       color: var(--border-active);
     }
 
+    .iso-node.active .iso-node-icon,
+    .iso-node.in-transit .iso-node-icon {
+      animation: isoIconGlow 0.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes isoIconGlow {
+      0% { filter: drop-shadow(0 0 2px var(--border-active)); }
+      100% { filter: drop-shadow(0 0 8px var(--border-active)); }
+    }
+
+    .iso-wire-path {
+      fill: none;
+      stroke: var(--border-subtle);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .iso-wire-path.active {
+      stroke: var(--border-active);
+      stroke-dasharray: 4 4;
+      animation: isoDashMove .8s linear infinite;
+    }
+
+    .iso-wire-path.in-transit {
+      stroke: var(--border-active);
+      stroke-width: 3;
+      filter: drop-shadow(0 0 6px var(--border-active));
+      stroke-dasharray: 4 4;
+      animation: isoDashMove .4s linear infinite;
+    }
+
+    .iso-wire-path.passed {
+      stroke: var(--accent-success);
+      stroke-width: 2;
+    }
+
+    .iso-wire-path.error {
+      stroke: var(--accent-error) !important;
+    }
+
+    @keyframes isoDashMove {
+      0% { stroke-dashoffset: 8; }
+      100% { stroke-dashoffset: 0; }
+    }
+
     .iso-node.error, .iso-node.error text {
       color: var(--accent-error);
       fill: var(--accent-error);
@@ -1358,7 +1404,12 @@
       font-size: 10px;
       text-decoration: underline;
       cursor: pointer;
-      padding: 4px;
+      min-height: 44px;
+      min-width: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
       touch-action: manipulation;
     }
   </style>
