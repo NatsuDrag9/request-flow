@@ -36,9 +36,6 @@ if (fs.existsSync(enginePath)) {
 
 let htmlContent = fs.readFileSync(srcHtmlPath, "utf-8");
 
-// Strip HTML comments (preserving conditional IE comments if any)
-htmlContent = htmlContent.replace(/<!--(?!\[)[\s\S]*?-->/g, "");
-
 // Minify CSS inside <style>
 htmlContent = htmlContent.replace(/<style>([\s\S]*?)<\/style>/g, (_, css) => {
   const minCss = esbuild.transformSync(css, { loader: "css", minify: true }).code;
@@ -54,16 +51,26 @@ if (engineJs) {
   }
 }
 
-// Safely minify inline <script> blocks (preserves function names & top-level bindings)
-htmlContent = htmlContent.replace(/<script>([\s\S]*?)<\/script>/g, (_, js) => {
-  const minJs = esbuild.transformSync(js, {
-    loader: "js",
-    minifyWhitespace: true,
-    minifySyntax: true,
-    minifyIdentifiers: false,
-  }).code;
-  return `<script>${minJs}</script>`;
+// Split HTML by <style> and <script> to minify each block appropriately
+const parts = htmlContent.split(/(<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>)/g);
+const minifiedParts = parts.map(part => {
+  if (part.startsWith("<style")) {
+    return part;
+  }
+  if (part.startsWith("<script")) {
+    const js = part.replace(/^<script>/, "").replace(/<\/script>$/, "");
+    const minJs = esbuild.transformSync(js, { loader: "js", minify: true }).code;
+    return `<script>${minJs}</script>`;
+  }
+  // Minify HTML markup: strip comments and collapse redundant whitespace
+  return part
+    .replace(/<!--(?!\[)[\s\S]*?-->/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/>\s+</g, "><")
+    .trim();
 });
+
+htmlContent = minifiedParts.join("");
 
 // Validation checks
 if (htmlContent.length > 1024 * 1024) {

@@ -18,112 +18,13 @@ export type { PipelineNodeConfig, NodeRenderState };
  * Authentic isometric technical projections for enterprise backend architecture.
  */
 export const NODE_ICONS: Record<string, string> = {
-  // 1. Client: Workstation Laptop / Terminal Screen
-  client: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polygon points="6,5 22,1 22,13 6,17" />
-      <polygon points="8,6.5 20,3.5 20,12 8,15" stroke-width="1" />
-      <line x1="9" y1="7.5" x2="19" y2="5" stroke-width="1" />
-      <line x1="9" y1="9.5" x2="15" y2="8" stroke-width="1" />
-      <line x1="9" y1="11.5" x2="14" y2="10.2" stroke-width="1" />
-      <polygon points="6,17 22,13 27,21 11,25" />
-      <polyline points="11,25 11,27 27,23 27,21" />
-      <polygon points="16,22 20,21 21.5,23.5 17.5,24.5" stroke-width="0.8" />
-      <line x1="9.5" y1="18.5" x2="21" y2="15.5" stroke-width="0.8" />
-    </svg>
-  `.trim(),
-
-  // 2. DNS & TLS 1.3: Cryptographic Handshake & Domain Resolver
-  dns_tls: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="15" cy="15" r="10" />
-      <ellipse cx="15" cy="15" rx="5" ry="10" stroke-width="1.2" />
-      <line x1="5" y1="15" x2="25" y2="15" stroke-width="1.2" />
-      <line x1="7.5" y1="10" x2="22.5" y2="10" stroke-width="0.8" />
-      <line x1="7.5" y1="20" x2="22.5" y2="20" stroke-width="0.8" />
-      <polygon points="19,17 28,17 28,26 19,26" fill="var(--bg-card)" stroke-width="1.3" />
-      <path d="M21.5,17 L21.5,14 C21.5,12.9 22.4,12 23.5,12 C24.6,12 25.5,12.9 25.5,14 L25.5,17" stroke-width="1.2" />
-    </svg>
-  `.trim(),
-
-  // 3. Load Balancer: Edge Traffic Distributor (Ingress splitting to balanced server conduits)
-  lb: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polygon points="16,4 25,8 16,12 7,8" />
-      <polygon points="7,8 16,12 16,16 7,12" />
-      <polygon points="16,12 25,8 25,12 16,16" />
-      <circle cx="16" cy="8" r="1.5" fill="currentColor" />
-      <line x1="16" y1="1" x2="16" y2="4" stroke-width="1.5" />
-      <path d="M11,14 L6,19 L6,25" stroke-width="1.2" />
-      <path d="M16,16 L16,25" stroke-width="1.2" />
-      <path d="M21,14 L26,19 L26,25" stroke-width="1.2" />
-      <circle cx="6" cy="27" r="1.5" />
-      <circle cx="16" cy="27" r="1.5" />
-      <circle cx="26" cy="27" r="1.5" />
-    </svg>
-  `.trim(),
-
-  // Aliased as network for backward compatibility
-  network: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="15" cy="15" r="10" />
-      <ellipse cx="15" cy="15" rx="5" ry="10" stroke-width="1.2" />
-      <line x1="5" y1="15" x2="25" y2="15" stroke-width="1.2" />
-      <polygon points="19,17 28,17 28,26 19,26" fill="var(--bg-card)" stroke-width="1.3" />
-      <path d="M21.5,17 L21.5,14 C21.5,12.9 22.4,12 23.5,12 C24.6,12 25.5,12.9 25.5,14 L25.5,17" stroke-width="1.2" />
-    </svg>
-  `.trim(),
-
-  // 4. API Gateway: Reverse Proxy & Security Routing Appliance
-  gateway: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polygon points="16,6 26,11 16,16 6,11" />
-      <polygon points="6,11 16,16 16,24 6,19" />
-      <polygon points="16,16 26,11 26,19 16,24" />
-      <path d="M12,14 L16,16 L20,14" stroke-width="1" />
-      <path d="M16,10 L20,12 L20,16 C20,19 16,21 16,21 C16,21 12,19 12,16 L12,12 Z" stroke-width="1" />
-      <circle cx="16" cy="15" r="0.8" fill="currentColor" />
-      <circle cx="8" cy="17" r="0.6" fill="currentColor" />
-      <circle cx="10" cy="18" r="0.6" fill="currentColor" />
-      <circle cx="22" cy="17" r="0.6" fill="currentColor" />
-      <circle cx="24" cy="16" r="0.6" fill="currentColor" />
-    </svg>
-  `.trim(),
-
-  // 5. Backend App: Compute Server Rack Module with Modular Trays
-  backend: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polygon points="9,9 18,5 26,9 17,13" />
-      <polygon points="9,9 17,13 17,27 9,23" />
-      <polygon points="17,13 26,9 26,23 17,27" />
-      <line x1="17" y1="17.5" x2="26" y2="13.5" stroke-width="1" />
-      <line x1="19" y1="16" x2="23" y2="14" stroke-width="0.8" />
-      <circle cx="24.2" cy="11.8" r="0.6" fill="currentColor" />
-      <line x1="17" y1="22" x2="26" y2="18" stroke-width="1" />
-      <circle cx="24.2" cy="16.3" r="0.6" fill="currentColor" />
-      <line x1="11" y1="12" x2="15" y2="14" stroke-width="0.8" />
-      <line x1="11" y1="16.5" x2="15" y2="18.5" stroke-width="0.8" />
-      <line x1="11" y1="21" x2="15" y2="23" stroke-width="0.8" />
-    </svg>
-  `.trim(),
-
-  // 6. Database: PostgreSQL 16 ACID Isometric Storage Cylinder
-  database: `
-    <svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <ellipse cx="16" cy="7" rx="11" ry="4.5" />
-      <path d="M5,7 C5,10 10,11.5 16,11.5 C22,11.5 27,10 27,7" stroke-width="1" />
-      <path d="M5,12 C5,15 10,16.5 16,16.5 C22,16.5 27,15 27,12" stroke-width="1" />
-      <path d="M5,17 C5,20 10,21.5 16,21.5 C22,21.5 27,20 27,17" stroke-width="1" />
-      <path d="M5,7 L5,23 C5,26.5 10,28 16,28 C22,28 27,26.5 27,23 L27,7" />
-      <circle cx="16" cy="7" r="1.5" fill="currentColor" />
-      <circle cx="9" cy="19.5" r="0.6" fill="currentColor" />
-      <circle cx="11.5" cy="20.2" r="0.6" fill="currentColor" />
-      <circle cx="21" cy="20" r="0.6" fill="currentColor" />
-      <circle cx="23.5" cy="19" r="0.6" fill="currentColor" />
-      <line x1="16" y1="14" x2="16" y2="16.5" stroke-width="1.2" />
-      <line x1="16" y1="19" x2="16" y2="21.5" stroke-width="1.2" />
-    </svg>
-  `.trim(),
+  client: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6,5 22,1 22,13 6,17"/><polygon points="8,6.5 20,3.5 20,12 8,15" stroke-width="1"/><line x1="9" y1="7.5" x2="19" y2="5" stroke-width="1"/><line x1="9" y1="9.5" x2="15" y2="8" stroke-width="1"/><line x1="9" y1="11.5" x2="14" y2="10.2" stroke-width="1"/><polygon points="6,17 22,13 27,21 11,25"/><polyline points="11,25 11,27 27,23 27,21"/><polygon points="16,22 20,21 21.5,23.5 17.5,24.5" stroke-width="0.8"/><line x1="9.5" y1="18.5" x2="21" y2="15.5" stroke-width="0.8"/></svg>',
+  dns_tls: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="10"/><ellipse cx="15" cy="15" rx="5" ry="10" stroke-width="1.2"/><line x1="5" y1="15" x2="25" y2="15" stroke-width="1.2"/><line x1="7.5" y1="10" x2="22.5" y2="10" stroke-width="0.8"/><line x1="7.5" y1="20" x2="22.5" y2="20" stroke-width="0.8"/><polygon points="19,17 28,17 28,26 19,26" fill="var(--bg-card)" stroke-width="1.3"/><path d="M21.5,17 L21.5,14 C21.5,12.9 22.4,12 23.5,12 C24.6,12 25.5,12.9 25.5,14 L25.5,17" stroke-width="1.2"/></svg>',
+  lb: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="16,4 25,8 16,12 7,8"/><polygon points="7,8 16,12 16,16 7,12"/><polygon points="16,12 25,8 25,12 16,16"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><line x1="16" y1="1" x2="16" y2="4" stroke-width="1.5"/><path d="M11,14 L6,19 L6,25" stroke-width="1.2"/><path d="M16,16 L16,25" stroke-width="1.2"/><path d="M21,14 L26,19 L26,25" stroke-width="1.2"/><circle cx="6" cy="27" r="1.5"/><circle cx="16" cy="27" r="1.5"/><circle cx="26" cy="27" r="1.5"/></svg>',
+  network: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="10"/><ellipse cx="15" cy="15" rx="5" ry="10" stroke-width="1.2"/><line x1="5" y1="15" x2="25" y2="15" stroke-width="1.2"/><polygon points="19,17 28,17 28,26 19,26" fill="var(--bg-card)" stroke-width="1.3"/><path d="M21.5,17 L21.5,14 C21.5,12.9 22.4,12 23.5,12 C24.6,12 25.5,12.9 25.5,14 L25.5,17" stroke-width="1.2"/></svg>',
+  gateway: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="16,6 26,11 16,16 6,11"/><polygon points="6,11 16,16 16,24 6,19"/><polygon points="16,16 26,11 26,19 16,24"/><path d="M12,14 L16,16 L20,14" stroke-width="1"/><path d="M16,10 L20,12 L20,16 C20,19 16,21 16,21 C16,21 12,19 12,16 L12,12 Z" stroke-width="1"/><circle cx="16" cy="15" r="0.8" fill="currentColor"/><circle cx="8" cy="17" r="0.6" fill="currentColor"/><circle cx="10" cy="18" r="0.6" fill="currentColor"/><circle cx="22" cy="17" r="0.6" fill="currentColor"/><circle cx="24" cy="16" r="0.6" fill="currentColor"/></svg>',
+  backend: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="9,9 18,5 26,9 17,13"/><polygon points="9,9 17,13 17,27 9,23"/><polygon points="17,13 26,9 26,23 17,27"/><line x1="17" y1="17.5" x2="26" y2="13.5" stroke-width="1"/><line x1="19" y1="16" x2="23" y2="14" stroke-width="0.8"/><circle cx="24.2" cy="11.8" r="0.6" fill="currentColor"/><line x1="17" y1="22" x2="26" y2="18" stroke-width="1"/><circle cx="24.2" cy="16.3" r="0.6" fill="currentColor"/><line x1="11" y1="12" x2="15" y2="14" stroke-width="0.8"/><line x1="11" y1="16.5" x2="15" y2="18.5" stroke-width="0.8"/><line x1="11" y1="21" x2="15" y2="23" stroke-width="0.8"/></svg>',
+  database: '<svg viewBox="0 0 32 32" width="32" height="32" class="node-tech-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="16" cy="7" rx="11" ry="4.5"/><path d="M5,7 C5,10 10,11.5 16,11.5 C22,11.5 27,10 27,7" stroke-width="1"/><path d="M5,12 C5,15 10,16.5 16,16.5 C22,16.5 27,15 27,12" stroke-width="1"/><path d="M5,17 C5,20 10,21.5 16,21.5 C22,21.5 27,20 27,17" stroke-width="1"/><path d="M5,7 L5,23 C5,26.5 10,28 16,28 C22,28 27,26.5 27,23 L27,7"/><circle cx="16" cy="7" r="1.5" fill="currentColor"/><circle cx="9" cy="19.5" r="0.6" fill="currentColor"/><circle cx="11.5" cy="20.2" r="0.6" fill="currentColor"/><circle cx="21" cy="20" r="0.6" fill="currentColor"/><circle cx="23.5" cy="19" r="0.6" fill="currentColor"/><line x1="16" y1="14" x2="16" y2="16.5" stroke-width="1.2"/><line x1="16" y1="19" x2="16" y2="21.5" stroke-width="1.2"/></svg>',
 };
 
 /**

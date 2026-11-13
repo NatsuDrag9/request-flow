@@ -2248,9 +2248,40 @@
       }
     }
 
+    // Expose all UI handlers explicitly on window to guarantee accessibility across all scopes
+    Object.assign(window, {
+      switchViewMode,
+      toggleTheme,
+      toggleScenarioPicker,
+      selectScenario,
+      closeScenarioPicker,
+      toggleLabControls,
+      setLabParam,
+      saveActiveScenarioConfig,
+      resetActiveScenarioConfig,
+      togglePlayPause,
+      handleStepForward,
+      handleStepBack,
+      handleReset,
+      inspectCurrentNode,
+      inspectNode,
+      hideInspector,
+      switchInspectorTab,
+      copyWireData,
+      handleResetStorage,
+      openScenarioInfo,
+      closeScenarioInfo
+    });
+
     window.addEventListener("DOMContentLoaded", () => {
       applyTheme(currentTheme);
       initLab();
+
+      // Modern Event Delegation for view mode pills and interactive buttons
+      const btnNet = document.getElementById("btnViewNetwork");
+      const btnSeq = document.getElementById("btnViewSequence");
+      if (btnNet) btnNet.addEventListener("click", () => switchViewMode("network"));
+      if (btnSeq) btnSeq.addEventListener("click", () => switchViewMode("sequence"));
     });
   </script>
 </body>
