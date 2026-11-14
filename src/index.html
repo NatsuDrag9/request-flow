@@ -829,12 +829,43 @@
       color: var(--text-secondary);
     }
 
+    .iso-label-bg {
+      fill: var(--bg-card);
+      stroke: var(--border-subtle);
+      stroke-width: 1;
+      transition: all 0.2s ease;
+    }
+
+    .iso-node.active .iso-label-bg {
+      stroke: var(--border-active);
+      fill: var(--bg-surface);
+      filter: drop-shadow(0 0 4px var(--border-active));
+    }
+
+    .iso-node.passed .iso-label-bg {
+      stroke: var(--accent-success);
+      fill: var(--bg-surface);
+    }
+
+    .iso-node.error .iso-label-bg {
+      stroke: var(--accent-error);
+      fill: var(--bg-surface);
+    }
+
     .iso-node-label {
       font-family: var(--font-mono);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       fill: var(--text-primary);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
+    }
+
+    .iso-node.active .iso-node-label {
+      fill: var(--border-active);
+    }
+
+    .iso-node.passed .iso-node-label {
+      fill: var(--accent-success);
     }
 
     .iso-node-ip {

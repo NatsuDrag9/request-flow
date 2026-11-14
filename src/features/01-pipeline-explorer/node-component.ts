@@ -256,6 +256,8 @@ export function renderIsometricNetworkMap(
     const nodeClass = `iso-node ${state.toLowerCase()}`;
 
     const icon = NODE_ICONS[pos.id] || "";
+    const pillWidth = Math.max(52, Math.round(pos.name.length * 5.6 + 20));
+    const pillX = Math.round(pos.x - pillWidth / 2);
 
     return `
       <g class="${nodeClass}" id="iso-node-${pos.index}" onclick="inspectNode(${pos.index})" cursor="pointer" role="button" tabindex="0" aria-label="Station 0${pos.index + 1}: ${pos.name} (${state})">
@@ -267,9 +269,11 @@ export function renderIsometricNetworkMap(
         <g class="iso-node-icon" transform="translate(${pos.x - 16}, ${pos.y - 12})">
           ${icon}
         </g>
+        <!-- Technical Label Pill Background (proportioned to prevent text overflow) -->
+        <rect x="${pillX}" y="${pos.y + 19}" width="${pillWidth}" height="17" rx="3" class="iso-label-bg" />
         <!-- Technical Labels -->
-        <text x="${pos.x}" y="${pos.y + 26}" class="iso-node-label" text-anchor="middle">0${pos.index + 1} ${pos.name}</text>
-        <text x="${pos.x}" y="${pos.y + 36}" class="iso-node-ip" text-anchor="middle">${pos.ip}</text>
+        <text x="${pos.x}" y="${pos.y + 31}" class="iso-node-label" text-anchor="middle">${pos.name}</text>
+        <text x="${pos.x}" y="${pos.y + 42}" class="iso-node-ip" text-anchor="middle">${pos.ip}</text>
       </g>
     `;
   }).join("\n");
