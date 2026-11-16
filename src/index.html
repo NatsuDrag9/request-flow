@@ -598,6 +598,50 @@
       margin-bottom: 4px;
     }
 
+    .info-lab-banner {
+      background: var(--bg-card);
+      border: 1px solid var(--accent-warning);
+      border-left: 4px solid var(--accent-warning);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-lab-banner-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .info-lab-badge {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--accent-warning);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .info-lab-tag {
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-warning);
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .info-lab-banner-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
     /* View Mode Switcher (Network vs Sequence) */
     .view-mode-bar {
       display: flex;
@@ -1173,6 +1217,33 @@
       gap: 6px;
       touch-action: manipulation;
       transition: transform 0.05s ease, box-shadow 0.05s ease;
+      position: relative;
+    }
+
+    .btn-notification-dot {
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-warning, #f59e0b);
+      box-shadow: 0 0 0 2px var(--bg-surface), 0 0 8px var(--accent-warning, #f59e0b);
+      animation: retro-beacon-blink 1.2s infinite ease-in-out;
+      pointer-events: none;
+    }
+
+    @keyframes retro-beacon-blink {
+      0%, 100% {
+        transform: scale(0.9);
+        opacity: 0.85;
+        box-shadow: 0 0 0 2px var(--bg-surface), 0 0 4px var(--accent-warning, #f59e0b);
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 1;
+        box-shadow: 0 0 0 2px var(--bg-surface), 0 0 10px #ffaa00, 0 0 16px var(--accent-warning, #f59e0b);
+      }
     }
 
     .btn-retro:active {
@@ -1583,6 +1654,7 @@
         </button>
         <button class="btn-retro btn-retro-secondary" id="btnScenarioInfo" onclick="openScenarioInfo()">
           [ ℹ SCENARIO INFO ]
+          <span class="btn-notification-dot" id="scenarioInfoDot" style="display: none;" title="Lab configuration modified scenario guidance"></span>
         </button>
         <button class="btn-retro btn-retro-secondary" id="btnReset" onclick="handleReset()">
           [ ↺ RESET ]
@@ -1660,6 +1732,16 @@
       <button class="modal-close-btn" onclick="closeScenarioInfo()" aria-label="Close scenario info">[ ✕ ]</button>
     </div>
     <div class="modal-body">
+      <div id="infoLabBanner" class="info-lab-banner" style="display: none;">
+        <div class="info-lab-banner-header">
+          <span class="info-lab-badge">⚡ ACTIVE LAB OVERRIDE</span>
+          <span class="info-lab-tag" id="infoLabTag">BURST RATE LIMITER OFF</span>
+        </div>
+        <div class="info-lab-banner-desc" id="infoLabDesc">
+          Parameters in ⚙ LAB have altered the normal execution path of this scenario.
+        </div>
+      </div>
+
       <div>
         <div class="info-section-title">WHAT HAPPENS IN THIS SCENARIO:</div>
         <div class="info-callout" id="infoWhatHappens"></div>
@@ -1727,6 +1809,63 @@
       concurrency: "idempotent"
     };
 
+    function showScenarioInfoNotification(show) {
+      const dot = document.getElementById("scenarioInfoDot");
+      if (dot) {
+        dot.style.display = show ? "block" : "none";
+      }
+    }
+
+    function getDefaultLabParamsForScenario(scenarioId) {
+      switch (scenarioId) {
+        case "rbac_restriction":
+          return { rateLimiter: true, userRole: "viewer", latency: "normal", concurrency: "idempotent" };
+        case "token_bucket_empty":
+          return { rateLimiter: false, userRole: "member", latency: "normal", concurrency: "idempotent" };
+        case "db_pool_timeout":
+        case "query_degraded":
+          return { rateLimiter: true, userRole: "member", latency: "lag", concurrency: "idempotent" };
+        case "optimistic_lock_cas":
+          return { rateLimiter: true, userRole: "member", latency: "normal", concurrency: "cas" };
+        default:
+          return { rateLimiter: true, userRole: "member", latency: "normal", concurrency: "idempotent" };
+      }
+    }
+
+    function getActiveScenarioOverrides(scenarioId, currentParams) {
+      const defaults = getDefaultLabParamsForScenario(scenarioId);
+      const diffs = [];
+      if (currentParams.rateLimiter !== defaults.rateLimiter) {
+        diffs.push({
+          param: "rateLimiter",
+          label: currentParams.rateLimiter ? "Rate Limiter: ON (Refilled)" : "Rate Limiter: OFF (Burst 429)",
+          value: currentParams.rateLimiter
+        });
+      }
+      if (currentParams.userRole !== defaults.userRole) {
+        diffs.push({
+          param: "userRole",
+          label: `Role: ${currentParams.userRole.toUpperCase()}`,
+          value: currentParams.userRole
+        });
+      }
+      if (currentParams.concurrency !== defaults.concurrency) {
+        diffs.push({
+          param: "concurrency",
+          label: currentParams.concurrency === "cas" ? "Concurrency: CAS Lock (409)" : "Concurrency: Idempotent Commit",
+          value: currentParams.concurrency
+        });
+      }
+      if (currentParams.latency !== defaults.latency) {
+        diffs.push({
+          param: "latency",
+          label: currentParams.latency === "lag" ? "Latency: 1.5s Lag" : "Latency: Normal",
+          value: currentParams.latency
+        });
+      }
+      return diffs;
+    }
+
     function initLab() {
       // 1. Initialize State Persistence Engine with sequential migration chaining (v1 -> v2 -> v3)
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.StorageEngine) {
@@ -1750,6 +1889,9 @@
 
         // Build dynamic scenario picker options
         renderScenarioPicker();
+
+        const diffs = getActiveScenarioOverrides("order_create", currentLabParams);
+        showScenarioInfoNotification(diffs.length > 0);
 
         updateView(engine.getState());
       } else {
@@ -1823,6 +1965,9 @@
       const label = document.getElementById("activeScenarioLabel");
       if (label) label.innerText = scenario.name;
 
+      const diffs = getActiveScenarioOverrides(scenarioId, currentLabParams);
+      showScenarioInfoNotification(diffs.length > 0);
+
       closeScenarioPicker();
       renderScenarioPicker();
       updateView(engine.getState());
@@ -1831,81 +1976,134 @@
     /* Scenario Guidance Info Modal */
     function openScenarioInfo() {
       if (!engine) return;
-      const scenario = engine.getScenario();
+      // User opened Scenario Info to read it: dismiss notification dot
+      showScenarioInfoNotification(false);
+
+      const baseScenario = engine.getBaseScenario ? engine.getBaseScenario() : engine.getScenario();
+      const effectiveScenario = engine.getScenario();
+      const overrides = getActiveScenarioOverrides(baseScenario.id, currentLabParams);
 
       const title = document.getElementById("infoModalTitle");
       const whatHappens = document.getElementById("infoWhatHappens");
       const expectedOutcome = document.getElementById("infoExpectedOutcome");
       const observationTargets = document.getElementById("infoObservationTargets");
+      const banner = document.getElementById("infoLabBanner");
+      const bannerTag = document.getElementById("infoLabTag");
+      const bannerDesc = document.getElementById("infoLabDesc");
 
-      if (title) title.innerText = `[ℹ] ${scenario.name.toUpperCase()}`;
-      if (whatHappens) whatHappens.innerText = scenario.description;
-
-      if (expectedOutcome) {
-        let outcomeText = "";
-        switch (scenario.id) {
-          case "order_create":
-            outcomeText = "Traverses all 6 nodes (Client -> DNS & TLS -> Load Balancer -> API Gateway -> Backend -> Database) and successfully commits an order transaction. Returns HTTP/1.1 201 Created.";
-            break;
-          case "auth_token_expired":
-            outcomeText = "Traverses Nodes 0..4. Halts strictly at Node 05 (Backend Controller / Auth) when JWT signature verification fails. Node 06 (Database) remains UNREACHED. Returns HTTP/1.1 401 Unauthorized.";
-            break;
-          case "rbac_restriction":
-            outcomeText = "Traverses Nodes 0..4. The client is authenticated, but RBAC guard rejects role 'viewer' for mutating checkout action. Halts before Database with HTTP/1.1 403 Forbidden.";
-            break;
-          case "token_bucket_empty":
-            outcomeText = "Halts at Node 04 (API Gateway) when burst traffic exhausts available bucket tokens (0/5). Backend and Database are protected from compute load. Returns HTTP/1.1 429 Too Many Requests with Retry-After: 1.";
-            break;
-          case "db_pool_timeout":
-            outcomeText = "Reaches Node 06 (Database), but connection pool is exhausted (20/20 active connections). Query hangs on row lock exceeding 5000ms SLA, triggering reverse proxy cutoff with HTTP/1.1 504 Gateway Timeout.";
-            break;
-          case "query_degraded":
-            outcomeText = "Full table scan across 2.4M rows takes 1200ms (vs 15ms normal). Completes with HTTP/1.1 200 OK carrying performance alert header X-Query-Time: 1200ms.";
-            break;
-          case "idempotency_cache":
-            outcomeText = "Client submits duplicate UUID Idempotency-Key. API Gateway intercepts request and immediately returns cached replay response (HTTP/1.1 200 OK) without touching Backend or Database.";
-            break;
-          case "optimistic_lock_cas":
-            outcomeText = "Concurrent transaction modified inventory version from 1 to 2. Stale version query touches 0 rows, triggering Compare-And-Swap conflict with HTTP/1.1 409 Conflict.";
-            break;
-          default:
-            outcomeText = `Halts at Node 0${scenario.haltNode + 1} with status ${scenario.code}.`;
-        }
-        expectedOutcome.innerText = outcomeText;
+      if (title) {
+        title.innerText = overrides.length > 0
+          ? `[ℹ] ${baseScenario.name.toUpperCase()} (LAB OVERRIDE)`
+          : `[ℹ] ${baseScenario.name.toUpperCase()}`;
       }
 
-      if (observationTargets) {
-        let obsText = "";
-        switch (scenario.id) {
+      if (banner && bannerTag && bannerDesc) {
+        if (overrides.length > 0) {
+          banner.style.display = "flex";
+          bannerTag.innerText = overrides.map(o => o.label).join(" | ");
+          bannerDesc.innerText = "Parameters adjusted in ⚙ LAB have dynamically altered the normal routing, security guards, or outcome of this scenario.";
+        } else {
+          banner.style.display = "none";
+        }
+      }
+
+      let whatText = "";
+      let outcomeText = "";
+      let obsText = "";
+
+      // 1. Rate Limiter OFF override (takes highest precedence as perimeter drop)
+      if (currentLabParams.rateLimiter === false) {
+        whatText = "The Token Bucket Rate Limiter at Station 04 (API Gateway) has been turned OFF in ⚙ LAB (or depleted by simulated burst traffic). Incoming requests cannot acquire a bucket token and are rejected at the perimeter.";
+        outcomeText = "Traverses Nodes 01..03 (Client -> DNS & TLS -> Load Balancer) to Node 04 (API Gateway). Halts strictly at Station 04 with HTTP/1.1 429 Too Many Requests (Retry-After: 1s). Stations 05 (Backend) and 06 (Database) remain completely UNREACHED, shielding backend compute and database connection pools from burst exhaustion.";
+        obsText = "1. In Station 04 (API Gateway) Wire Inspector: note ROUTING_RULE: DROP_RATE_LIMIT_EXCEEDED, RATE_LIMIT: 0 remaining, RETRY_AFTER: 1s, and HTTP/1.1 429 response.\n2. In Stations 05 and 06: observe status marked UNREACHED (zero compute or DB lock contention).";
+      }
+      // 2. Rate Limiter ON override on token_bucket_empty scenario (Fixing the rate limit)
+      else if (baseScenario.id === "token_bucket_empty" && currentLabParams.rateLimiter === true) {
+        whatText = "The Token Bucket Rate Limiter has been turned ON in ⚙ LAB with full capacity (5/5). Burst traffic is accommodated and allowed through the perimeter API Gateway.";
+        outcomeText = "Unlike the baseline scenario which failed with 429 at Node 04, the request now successfully passes Station 04 (API Gateway) -> Station 05 (Backend) -> Station 06 (Database). PostgreSQL transaction commits successfully with HTTP/1.1 201 Created.";
+        obsText = "1. In Station 04 (API Gateway): observe RATE_LIMIT_CAPACITY: 5/5, RATE_LIMIT_REMAINING: 4, and routing forward to backend.\n2. In Station 06 (Database): observe PostgreSQL transaction commit with status 201 Created.";
+      }
+      // 3. User Role Viewer override (RBAC rejection at Station 05)
+      else if (currentLabParams.userRole === "viewer" && baseScenario.id !== "auth_token_expired") {
+        whatText = "User Role has been configured as 'Viewer (403)' in ⚙ LAB. While the client carries a valid Bearer JWT, the RBAC security policy requires 'member' or 'admin' role for order creation and state mutations.";
+        outcomeText = "Traverses Nodes 01..04 to Node 05 (Backend). The JWT auth middleware passes, but the RBAC security guard rejects role 'viewer' with HTTP/1.1 403 Forbidden. Station 06 (Database) remains UNREACHED, preventing unauthorized state modification.";
+        obsText = "1. In Station 05 (Backend) Wire Inspector: observe USER_ROLE: viewer, REQUIRED_ROLES: [member, admin], MIDDLEWARE: rbacPolicy (FAILED), and body { error: 'insufficient_permissions', code: 403 }.\n2. In Station 06 (Database): observe zero SQL execution.";
+      }
+      // 4. User Role Admin or Member override on rbac_restriction scenario (Elevating privileges)
+      else if (baseScenario.id === "rbac_restriction" && (currentLabParams.userRole === "admin" || currentLabParams.userRole === "member")) {
+        whatText = `User Role has been elevated to '${currentLabParams.userRole.toUpperCase()}' in ⚙ LAB. The RBAC security policy authorizes mutating operations for this role.`;
+        outcomeText = `Unlike the baseline scenario which failed with 403 Forbidden, role '${currentLabParams.userRole}' satisfies RBAC authorization. The request passes Station 05 (Backend) to Station 06 (Database) and commits with HTTP/1.1 201 Created.`;
+        obsText = `1. In Station 05 (Backend): observe USER_ROLE: ${currentLabParams.userRole} and MIDDLEWARE: rbacPolicy (PASSED).\n2. In Station 06 (Database): observe ACID INSERT into orders table with HTTP/1.1 201 Created.`;
+      }
+      // 5. Concurrency CAS override (Station 06 Database conflict)
+      else if (currentLabParams.concurrency === "cas") {
+        whatText = "Concurrency Control is set to 'CAS Lock (409)' in ⚙ LAB. This simulates a concurrent write race where another user updated the inventory version from 1 to 2 before this transaction committed.";
+        outcomeText = "Traverses Nodes 01..05 to Node 06 (Database). PostgreSQL executes an optimistic lock conditional UPDATE (WHERE version = 1). Because version is now 2, the query affects 0 rows, triggering an OptimisticLockException with HTTP/1.1 409 Conflict.";
+        obsText = "1. In Station 06 (Database) Wire Inspector: observe SQL: UPDATE ... WHERE version = 1, CAS_VERSION: 2, ROWS_AFFECTED: 0, and response body optimistic_lock_conflict (409 Conflict).";
+      }
+      // 6. Concurrency Idempotent override on optimistic_lock_cas (Resolving CAS conflict)
+      else if (baseScenario.id === "optimistic_lock_cas" && currentLabParams.concurrency === "idempotent") {
+        whatText = "Concurrency Control is set to 'Idempotent Commit' in ⚙ LAB. Transaction isolation and idempotency keys ensure the mutation executes without version race collision.";
+        outcomeText = "Traverses all 6 stations to Node 06 (Database). Exclusive row lock is acquired and the transaction commits cleanly with HTTP/1.1 201 Created.";
+        obsText = "1. In Station 06 (Database): observe LOCK_STATUS: EXCLUSIVE_ROW_LOCK_GRANTED and HTTP/1.1 201 Created commit response.";
+      }
+      // 7. Latency Lag override (1.5s delay)
+      else if (currentLabParams.latency === "lag" && baseScenario.id !== "db_pool_timeout") {
+        whatText = "Database Latency is set to '1.5s Lag' in ⚙ LAB, simulating an unindexed sequential table scan or lock wait contention on PostgreSQL.";
+        outcomeText = "Traverses all 6 stations. Completes at Station 06 (Database) after a 1500ms delay, returning HTTP/1.1 200 OK with alert header X-Query-Time: 1500ms.";
+        obsText = "1. In Station 06 (Database): observe executionMs: 1500ms and X-Performance-Warning: 1.5s simulated database lag.";
+      }
+      // 8. Latency Normal override on db_pool_timeout (Resolving pool timeout)
+      else if (baseScenario.id === "db_pool_timeout" && currentLabParams.latency === "normal") {
+        whatText = "Database Latency is restored to 'Normal' in ⚙ LAB. Connection pool lock contention is resolved, allowing the query to acquire a connection in 15ms.";
+        outcomeText = "Unlike the baseline 504 Gateway Timeout, the query executes within SLA limits at Station 06 (Database), returning HTTP/1.1 200 OK.";
+        obsText = "1. In Station 06 (Database): observe executionMs: 15ms and clean HTTP 200 OK response.";
+      }
+      // Default: Baseline Scenario Guidance
+      else {
+        whatText = baseScenario.description;
+        switch (baseScenario.id) {
           case "order_create":
+            outcomeText = "Traverses all 6 nodes (Client -> DNS & TLS -> Load Balancer -> API Gateway -> Backend -> Database) and successfully commits an order transaction. Returns HTTP/1.1 201 Created.";
             obsText = "Observe Bearer JWT in Client wire headers, TLS 1.3 1-RTT handshake on Node 02, round-robin LB target selection on Node 03, and PostgreSQL BEGIN ... COMMIT transaction on Node 06.";
             break;
           case "auth_token_expired":
+            outcomeText = "Traverses Nodes 0..4. Halts strictly at Node 05 (Backend Controller / Auth) when JWT signature verification fails. Node 06 (Database) remains UNREACHED. Returns HTTP/1.1 401 Unauthorized.";
             obsText = "In Wire Telemetry at Node 05 (Backend), observe AUTH_STATUS: REJECTED (TokenExpiredError) and note that Node 06 shows zero SQL dispatches.";
             break;
           case "rbac_restriction":
+            outcomeText = "Traverses Nodes 0..4. The client is authenticated, but RBAC guard rejects role 'viewer' for mutating checkout action. Halts before Database with HTTP/1.1 403 Forbidden.";
             obsText = "In Backend wire telemetry, observe REQ_ROLES: [member, admin] vs granted USER_ROLE: viewer, and response payload { error: 'insufficient_permissions', code: 403 }.";
             break;
           case "token_bucket_empty":
+            outcomeText = "Halts at Node 04 (API Gateway) when burst traffic exhausts available bucket tokens (0/5). Backend and Database are protected from compute load. Returns HTTP/1.1 429 Too Many Requests with Retry-After: 1.";
             obsText = "Inspect API Gateway wire data for RATE_LIMIT: 0 req remaining, RETRY_AFTER: 1s, and HTTP/1.1 429 response headers.";
             break;
           case "db_pool_timeout":
+            outcomeText = "Reaches Node 06 (Database), but connection pool is exhausted (20/20 active connections). Query hangs on row lock exceeding 5000ms SLA, triggering reverse proxy cutoff with HTTP/1.1 504 Gateway Timeout.";
             obsText = "Inspect Database wire data for LOCK_STATUS: LOCK_WAIT_TIMEOUT_EXCEEDED, EXEC_TIME: 5021ms (> 5000ms SLA), and HTTP/1.1 504 Gateway Timeout.";
             break;
           case "query_degraded":
+            outcomeText = "Full table scan across 2.4M rows takes 1200ms (vs 15ms normal). Completes with HTTP/1.1 200 OK carrying performance alert header X-Query-Time: 1200ms.";
             obsText = "Inspect Database wire telemetry for X-Query-Time: 1200ms and execution plan EXPLAIN ANALYZE showing sequential table scan.";
             break;
           case "idempotency_cache":
+            outcomeText = "Client submits duplicate UUID Idempotency-Key. API Gateway intercepts request and immediately returns cached replay response (HTTP/1.1 200 OK) without touching Backend or Database.";
             obsText = "Inspect API Gateway headers for X-Idempotency-Status: REPLAY and note that Backend and Database stages are marked BYPASSED.";
             break;
           case "optimistic_lock_cas":
+            outcomeText = "Concurrent transaction modified inventory version from 1 to 2. Stale version query touches 0 rows, triggering Compare-And-Swap conflict with HTTP/1.1 409 Conflict.";
             obsText = "Inspect Database wire data for CAS_VERSION: 2, ROWS_AFFECT: 0, and response body optimistic_lock_conflict (409 Conflict).";
             break;
           default:
+            outcomeText = `Halts at Node 0${effectiveScenario.haltNode + 1} with status ${effectiveScenario.code}.`;
             obsText = "Inspect wire telemetry at the halting node to observe headers and status codes.";
         }
-        observationTargets.innerText = obsText;
       }
+
+      if (whatHappens) whatHappens.innerText = whatText;
+      if (expectedOutcome) expectedOutcome.innerText = outcomeText;
+      if (observationTargets) observationTargets.innerText = obsText;
 
       const modal = document.getElementById("scenarioInfoModal");
       const backdrop = document.getElementById("scenarioInfoBackdrop");
@@ -1944,6 +2142,9 @@
       }
       if (engine) {
         engine.setLabOverrides(currentLabParams);
+        const scenarioId = engine.getBaseScenario ? engine.getBaseScenario().id : engine.getScenario().id;
+        const diffs = getActiveScenarioOverrides(scenarioId, currentLabParams);
+        showScenarioInfoNotification(diffs.length > 0);
         updateView(engine.getState());
       }
     }
@@ -2049,6 +2250,7 @@
       storageEngine.resetScenarioConfig(scenarioId);
 
       syncLabParamsForScenario(scenarioId);
+      showScenarioInfoNotification(false);
       if (engine) {
         engine.setLabOverrides(currentLabParams);
         updateView(engine.getState());
