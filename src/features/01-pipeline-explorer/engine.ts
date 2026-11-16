@@ -1,4 +1,11 @@
-import { getScenario, getAllScenarios, SCENARIOS, type ScenarioDefinition } from "./scenarios";
+import {
+  getScenario,
+  getAllScenarios,
+  SCENARIOS,
+  resolveEffectiveScenario,
+  type ScenarioDefinition,
+  type LabParameterOverrides,
+} from "./scenarios";
 import type {
   EngineStatus,
   Direction,
@@ -8,7 +15,14 @@ import type {
   EventListener,
 } from "./types";
 
-export { getScenario, getAllScenarios, SCENARIOS, type ScenarioDefinition };
+export {
+  getScenario,
+  getAllScenarios,
+  SCENARIOS,
+  resolveEffectiveScenario,
+  type ScenarioDefinition,
+  type LabParameterOverrides,
+};
 export type {
   EngineStatus,
   Direction,
@@ -19,7 +33,9 @@ export type {
 };
 
 export class PipelineEngine {
+  private baseScenario: ScenarioDefinition;
   private scenario: ScenarioDefinition;
+  private labOverrides: LabParameterOverrides | null = null;
   private status: EngineStatus = "READY";
   private currentNode = 0;
   private direction: Direction = "DOWNSTREAM";
@@ -32,7 +48,9 @@ export class PipelineEngine {
 
   constructor(options: PipelineEngineOptions = {}) {
     const id = options.scenarioId || "201-created";
-    this.scenario = getScenario(id);
+    this.baseScenario = getScenario(id);
+    this.labOverrides = options.labOverrides ?? null;
+    this.scenario = resolveEffectiveScenario(this.baseScenario, this.labOverrides);
     if (options.stayDurationMs) {
       this.stayDurationMs = options.stayDurationMs;
     }
@@ -58,8 +76,22 @@ export class PipelineEngine {
     return this.scenario;
   }
 
-  public setScenario(scenarioId: string): void {
-    this.scenario = getScenario(scenarioId);
+  public getBaseScenario(): ScenarioDefinition {
+    return this.baseScenario;
+  }
+
+  public setScenario(scenarioId: string, overrides?: LabParameterOverrides | null): void {
+    this.baseScenario = getScenario(scenarioId);
+    if (overrides !== undefined) {
+      this.labOverrides = overrides;
+    }
+    this.scenario = resolveEffectiveScenario(this.baseScenario, this.labOverrides);
+    this.reset();
+  }
+
+  public setLabOverrides(overrides: LabParameterOverrides | null): void {
+    this.labOverrides = overrides;
+    this.scenario = resolveEffectiveScenario(this.baseScenario, this.labOverrides);
     this.reset();
   }
 

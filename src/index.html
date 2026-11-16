@@ -1734,21 +1734,22 @@
         updateStorageFooter();
       }
 
+      // Restore custom or default parameters for initial scenario
+      syncLabParamsForScenario("order_create");
+
       // 2. Initialize Headless 6-Node FSM Engine (2.0s stay duration, 1.0s transit duration)
       if (typeof RequestFlowEngine !== "undefined" && RequestFlowEngine.PipelineEngine) {
         engine = new RequestFlowEngine.PipelineEngine({
           scenarioId: "order_create",
           stayDurationMs: 1000,
-          transitionDurationMs: 1000
+          transitionDurationMs: 1000,
+          labOverrides: currentLabParams
         });
         engine.on("stateChange", updateView);
         engine.on("complete", onPipelineComplete);
 
         // Build dynamic scenario picker options
         renderScenarioPicker();
-
-        // Restore custom or default parameters for initial scenario
-        syncLabParamsForScenario("order_create");
 
         updateView(engine.getState());
       } else {
@@ -1814,14 +1815,13 @@
 
     function selectScenario(scenarioId) {
       if (!engine) return;
-      engine.setScenario(scenarioId);
+      // Synchronize lab parameters (restore custom or baseline defaults)
+      syncLabParamsForScenario(scenarioId);
+      engine.setScenario(scenarioId, currentLabParams);
 
       const scenario = engine.getScenario();
       const label = document.getElementById("activeScenarioLabel");
       if (label) label.innerText = scenario.name;
-
-      // Synchronize lab parameters (restore custom or baseline defaults)
-      syncLabParamsForScenario(scenario.id);
 
       closeScenarioPicker();
       renderScenarioPicker();
@@ -1937,6 +1937,15 @@
     function setLabParam(param, value) {
       currentLabParams[param] = value;
       updateLabControlsUI();
+      const indicator = document.getElementById("labConfigIndicator");
+      if (indicator) {
+        indicator.innerText = "MODIFIED";
+        indicator.style.color = "var(--accent-warning)";
+      }
+      if (engine) {
+        engine.setLabOverrides(currentLabParams);
+        updateView(engine.getState());
+      }
     }
 
     function updateLabControlsUI() {
@@ -2023,7 +2032,7 @@
 
     function saveActiveScenarioConfig() {
       if (!engine || !storageEngine) return;
-      const scenarioId = engine.getScenario().id;
+      const scenarioId = engine.getBaseScenario ? engine.getBaseScenario().id : engine.getScenario().id;
       storageEngine.saveScenarioConfig(scenarioId, currentLabParams);
 
       const indicator = document.getElementById("labConfigIndicator");
@@ -2036,10 +2045,14 @@
 
     function resetActiveScenarioConfig() {
       if (!engine || !storageEngine) return;
-      const scenarioId = engine.getScenario().id;
+      const scenarioId = engine.getBaseScenario ? engine.getBaseScenario().id : engine.getScenario().id;
       storageEngine.resetScenarioConfig(scenarioId);
 
       syncLabParamsForScenario(scenarioId);
+      if (engine) {
+        engine.setLabOverrides(currentLabParams);
+        updateView(engine.getState());
+      }
       alertToast("CONFIG RESET");
     }
 
@@ -2048,6 +2061,14 @@
       const scenario = engine.getScenario();
       const stage = scenario.stages[state.currentNode];
       const isErrorScenario = scenario.resultStatus === "HALTED_ERROR";
+
+      // Synchronize active scenario label
+      const label = document.getElementById("activeScenarioLabel");
+      if (label && engine.getBaseScenario) {
+        label.innerText = engine.getBaseScenario().name;
+      } else if (label) {
+        label.innerText = scenario.name;
+      }
 
       // Update Dynamic Subway track with Technical Blueprint Icons
       const trackNodes = document.getElementById("subwayTrackNodes");

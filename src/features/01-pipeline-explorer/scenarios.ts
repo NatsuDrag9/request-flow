@@ -773,6 +773,322 @@ export function getScenario(id: string): ScenarioDefinition {
   return scenario;
 }
 
+export interface LabParameterOverrides {
+  rateLimiter?: boolean;
+  userRole?: "viewer" | "member" | "admin";
+  latency?: "normal" | "lag";
+  concurrency?: "idempotent" | "cas";
+}
+
+export function resolveEffectiveScenario(
+  baseScenario: ScenarioDefinition,
+  overrides?: LabParameterOverrides | null
+): ScenarioDefinition {
+  if (!overrides) {
+    return baseScenario;
+  }
+
+  const stages: Record<number, any> = { ...baseScenario.stages };
+  let haltNode = baseScenario.haltNode;
+  let resultStatus = baseScenario.resultStatus;
+  let code = baseScenario.code;
+
+  // 1. Token Bucket Rate Limiter check at Node 3 (API Gateway)
+  if (overrides.rateLimiter === false) {
+    haltNode = 3;
+    resultStatus = "HALTED_ERROR";
+    code = "429";
+    stages[3] = {
+      nodeId: "gateway",
+      title: "API Gateway (Token Bucket Filter)",
+      description: "Token Bucket empty (0/5 tokens). Burst traffic dropped immediately with HTTP 429 and Retry-After: 1.",
+      wireData: {
+        gateway: {
+          routingRule: "DROP_RATE_LIMIT_EXCEEDED",
+          corsAllowed: true,
+          rateLimitRemaining: 0,
+          rateLimitCapacity: 5,
+          retryAfter: 1,
+          traceId: "req-trace-429-burst"
+        },
+        response: {
+          statusCode: 429,
+          statusText: "Too Many Requests",
+          headers: {
+            "Retry-After": "1",
+            "X-RateLimit-Remaining": "0"
+          },
+          body: {
+            error: "rate_limit_exceeded",
+            message: "Token bucket capacity exhausted by burst traffic. Retry in 1 second."
+          }
+        }
+      }
+    };
+    stages[4] = {
+      nodeId: "backend",
+      title: "Backend / Auth Controller",
+      description: "UNREACHED: Dropped at perimeter gateway; backend compute is protected from burst spike.",
+      wireData: {}
+    };
+    stages[5] = {
+      nodeId: "database",
+      title: "Database (PostgreSQL)",
+      description: "UNREACHED: Protected from downstream connection overload.",
+      wireData: {}
+    };
+  } else if (overrides.rateLimiter === true && baseScenario.id === "token_bucket_empty") {
+    // User turned Rate Limiter ON: refilled tokens allow request to proceed through gateway
+    stages[3] = {
+      nodeId: "gateway",
+      title: "API Gateway (Rate Limiter: ON)",
+      description: "Token Bucket healthy (5/5 capacity). Request allowed through perimeter to backend.",
+      wireData: {
+        gateway: {
+          routingRule: "/v1/checkout -> upstream_backend:8080",
+          corsAllowed: true,
+          rateLimitRemaining: 4,
+          rateLimitCapacity: 5,
+          traceId: "req-trace-pass-gw"
+        }
+      }
+    };
+    haltNode = 5;
+    resultStatus = "HALTED_SUCCESS";
+    code = "201";
+    stages[4] = {
+      nodeId: "backend",
+      title: "Backend / Auth Controller",
+      description: "Authenticated with valid Bearer JWT. User role verified; dispatches order to database.",
+      wireData: {
+        backend: {
+          authStatus: "AUTHENTICATED",
+          userId: 8812,
+          userRole: "member",
+          middlewareChain: ["jwtAuth (PASSED)", "rbacPolicy (PASSED)", "checkoutHandler"],
+          handler: "CheckoutController.processOrder"
+        }
+      }
+    };
+    stages[5] = {
+      nodeId: "database",
+      title: "Database (PostgreSQL 16)",
+      description: "ACID transaction committed successfully with row lock granted.",
+      wireData: {
+        database: {
+          engine: "PostgreSQL 16.2",
+          isolationLevel: "READ COMMITTED",
+          sql: "BEGIN; INSERT INTO orders (user_id, item, qty, status) VALUES (8812, 'checkout_item', 1, 'CONFIRMED'); COMMIT;",
+          lockStatus: "EXCLUSIVE_ROW_LOCK_GRANTED",
+          executionMs: 8,
+          rowsAffected: 1
+        },
+        response: {
+          statusCode: 201,
+          statusText: "Created",
+          body: { orderId: 98412, status: "confirmed" }
+        }
+      }
+    };
+  }
+
+  // 2. User Role (RBAC) check at Node 4 (Backend) - only if passed Gateway
+  if (haltNode > 3) {
+    if (overrides.userRole === "viewer" && baseScenario.id !== "auth_token_expired") {
+      haltNode = 4;
+      resultStatus = "HALTED_ERROR";
+      code = "403";
+      stages[4] = {
+        nodeId: "backend",
+        title: "Backend / Auth Controller",
+        description: "Authenticated, but RBAC guard rejects 'viewer' (mutating action requires 'member' or 'admin'). Halts before DB.",
+        wireData: {
+          backend: {
+            authStatus: "AUTHENTICATED",
+            userId: 3012,
+            userRole: "viewer",
+            requiredRoles: ["member", "admin"],
+            middlewareChain: ["jwtAuth (PASSED)", "rbacPolicy (FAILED)"],
+            handler: "ErrorHandler.forbidden"
+          },
+          response: {
+            statusCode: 403,
+            statusText: "Forbidden",
+            body: {
+              error: "insufficient_permissions",
+              code: 403,
+              required_roles: ["member", "admin"],
+              granted_role: "viewer"
+            }
+          }
+        }
+      };
+      stages[5] = {
+        nodeId: "database",
+        title: "Database (PostgreSQL)",
+        description: "UNREACHED: Mutation rejected at RBAC security layer before executing SQL transaction.",
+        wireData: {}
+      };
+    } else if ((overrides.userRole === "member" || overrides.userRole === "admin") && baseScenario.id === "rbac_restriction") {
+      // User elevated role on rbac_restriction
+      haltNode = 5;
+      resultStatus = "HALTED_SUCCESS";
+      code = "201";
+      stages[4] = {
+        nodeId: "backend",
+        title: `Backend / Auth Controller (${overrides.userRole.toUpperCase()})`,
+        description: `User role '${overrides.userRole}' granted full mutation permissions. RBAC policy passed.`,
+        wireData: {
+          backend: {
+            authStatus: "AUTHENTICATED",
+            userId: 3012,
+            userRole: overrides.userRole,
+            requiredRoles: ["member", "admin"],
+            middlewareChain: ["jwtAuth (PASSED)", "rbacPolicy (PASSED)"],
+            handler: "CheckoutController.processOrder"
+          }
+        }
+      };
+      stages[5] = {
+        nodeId: "database",
+        title: "Database (PostgreSQL 16)",
+        description: "PostgreSQL transaction committed successfully.",
+        wireData: {
+          database: {
+            engine: "PostgreSQL 16.2",
+            isolationLevel: "READ COMMITTED",
+            sql: "BEGIN; INSERT INTO orders (user_id, item, status) VALUES (3012, 'matrix_printer_ribbon', 'CONFIRMED'); COMMIT;",
+            lockStatus: "EXCLUSIVE_ROW_LOCK_GRANTED",
+            executionMs: 9,
+            rowsAffected: 1
+          },
+          response: {
+            statusCode: 201,
+            statusText: "Created",
+            body: { orderId: 98415, status: "confirmed" }
+          }
+        }
+      };
+    }
+  }
+
+  // 3. Concurrency & Latency check at Node 5 (Database) - only if reached Database
+  if (haltNode >= 5) {
+    if (overrides.concurrency === "cas") {
+      haltNode = 5;
+      resultStatus = "HALTED_ERROR";
+      code = "409";
+      stages[5] = {
+        nodeId: "database",
+        title: "Database (PostgreSQL - CAS Conflict)",
+        description: "Another concurrent transaction modified version. Stale version query touches 0 rows (409 Conflict).",
+        wireData: {
+          database: {
+            engine: "PostgreSQL 16.2",
+            isolationLevel: "READ COMMITTED",
+            sql: "UPDATE inventory SET stock = stock - 1, version = version + 1 WHERE id = 402 AND version = 1;",
+            lockStatus: "CAS_VERSION_MISMATCH (0 rows affected)",
+            executionMs: 14,
+            rowsAffected: 0,
+            casVersion: 2
+          },
+          response: {
+            statusCode: 409,
+            statusText: "Conflict",
+            body: {
+              error: "optimistic_lock_conflict",
+              code: 409,
+              message: "Resource was modified by another concurrent transaction. Please refresh and retry."
+            }
+          }
+        }
+      };
+    } else if (overrides.concurrency === "idempotent" && baseScenario.id === "optimistic_lock_cas") {
+      haltNode = 5;
+      resultStatus = "HALTED_SUCCESS";
+      code = "201";
+      stages[5] = {
+        nodeId: "database",
+        title: "Database (PostgreSQL - Idempotent Commit)",
+        description: "Idempotency key prevents race condition; transaction committed cleanly.",
+        wireData: {
+          database: {
+            engine: "PostgreSQL 16.2",
+            isolationLevel: "READ COMMITTED",
+            sql: "UPDATE inventory SET stock = stock - 1 WHERE id = 402; COMMIT;",
+            lockStatus: "EXCLUSIVE_ROW_LOCK_GRANTED",
+            executionMs: 11,
+            rowsAffected: 1
+          },
+          response: {
+            statusCode: 201,
+            statusText: "Created",
+            body: { orderId: 98420, status: "confirmed" }
+          }
+        }
+      };
+    }
+
+    if (overrides.latency === "lag" && haltNode === 5 && resultStatus === "HALTED_SUCCESS") {
+      stages[5] = {
+        nodeId: "database",
+        title: "Database (PostgreSQL - Latency Lag)",
+        description: "1.5s database lag simulated (unindexed table scan / lock wait). Returns with latency warning.",
+        wireData: {
+          database: {
+            engine: "PostgreSQL 16.2",
+            isolationLevel: "READ COMMITTED",
+            sql: "EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'PENDING';",
+            lockStatus: "SHARED_READ_LOCK",
+            executionMs: 1500,
+            rowsAffected: 1
+          },
+          response: {
+            statusCode: 200,
+            statusText: "OK",
+            headers: {
+              "X-Query-Time": "1500ms",
+              "X-Performance-Warning": "1.5s simulated database lag"
+            },
+            body: { status: "completed_degraded", latencyMs: 1500 }
+          }
+        }
+      };
+    } else if (overrides.latency === "normal" && baseScenario.id === "db_pool_timeout") {
+      haltNode = 5;
+      resultStatus = "HALTED_SUCCESS";
+      code = "200";
+      stages[5] = {
+        nodeId: "database",
+        title: "Database (PostgreSQL - Normal Latency)",
+        description: "Connection pool acquired within 15ms. Query executed successfully without timeout.",
+        wireData: {
+          database: {
+            engine: "PostgreSQL 16.2",
+            isolationLevel: "READ COMMITTED",
+            sql: "SELECT * FROM inventory WHERE item_id = 902;",
+            lockStatus: "ROW_SHARED_LOCK",
+            executionMs: 15
+          },
+          response: {
+            statusCode: 200,
+            statusText: "OK",
+            body: { itemId: 902, stock: 12 }
+          }
+        }
+      };
+    }
+  }
+
+  return {
+    ...baseScenario,
+    haltNode,
+    resultStatus,
+    code,
+    stages
+  };
+}
+
 export function getAllScenarios(): ScenarioDefinition[] {
   return Object.values(SCENARIOS);
 }

@@ -95,6 +95,12 @@ export interface PipelineEngineOptions {
   hopDelayMs?: number;
   stayDurationMs?: number;
   transitionDurationMs?: number;
+  labOverrides?: {
+    rateLimiter?: boolean;
+    userRole?: "viewer" | "member" | "admin";
+    latency?: "normal" | "lag";
+    concurrency?: "idempotent" | "cas";
+  } | null;
 }
 
 export type EngineEvent = "stateChange" | "nodeActivate" | "complete";
